@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 
     <script>
         tailwind.config = {
@@ -15,7 +16,10 @@
                     colors: {
                         university: {
                             50: '#f0fdf4',
-                            500: '#22c55e', // Verde Principal
+                            100: '#dcfce7',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
                             600: '#16a34a',
                             700: '#15803d',
                         }
@@ -24,34 +28,56 @@
             }
         }
     </script>
-    <style>
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-    </style>
 </head>
-<body class="bg-gray-50 font-sans antialiased text-gray-900">
+<body class="bg-gray-50 font-sans antialiased text-gray-900 flex flex-col min-h-screen">
     <header>
-        <nav class="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center">
+        <nav class="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-50">
             <div class="flex items-center gap-2">
-                <div class="bg-university-500 p-2 rounded-lg">
-                    <i class="fas fa-graduation-cap text-white text-xl"></i>
-                </div>
-                <span class="font-bold text-xl tracking-tight text-gray-800">Edu<span class="text-university-500">Nix</span></span>
+                <a asp-controller="Home" asp-action="Index" class="flex items-center gap-2">
+                    <div class="bg-university-600 p-2 rounded-lg shadow-inner">
+                        <i class="fas fa-graduation-cap text-white text-xl"></i>
+                    </div>
+                    <span class="font-extrabold text-xl tracking-tight text-gray-800">Edu<span class="text-university-600">Nix</span></span>
+                </a>
             </div>
-            <div class="flex gap-4">
-                <a asp-controller="Account" asp-action="Login" class="text-gray-600 hover:text-university-600 font-medium transition">Entrar</a>
-                <a asp-controller="Account" asp-action="Register" class="bg-university-600 text-white px-5 py-2 rounded-full font-medium hover:bg-university-700 transition transform hover:scale-105 shadow-lg shadow-university-200">Registrarse</a>
+
+            <div class="flex items-center gap-4">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <div class="hidden md:block text-right mr-2">
+                        <p class="text-sm font-bold text-gray-800">@User.Identity.Name</p>
+                        <p class="text-xs text-university-600 font-medium">@User.Claims.FirstOrDefault(c => c.Type == "Matricula")?.Value</p>
+                    </div>
+
+                    <a asp-controller="Profile" asp-action="Index" class="w-10 h-10 rounded-full bg-university-100 text-university-600 flex items-center justify-center hover:bg-university-200 transition-colors border border-university-200" title="Mi Perfil">
+                        <i class="fas fa-user"></i>
+                    </a>
+
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                        <button type="submit" class="text-gray-500 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50" title="Cerrar Sesión">
+                            <i class="fas fa-sign-out-alt text-lg"></i>
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="text-gray-600 hover:text-university-600 font-medium transition">Entrar</a>
+                    <a asp-controller="Account" asp-action="Register" class="bg-university-600 text-white px-5 py-2 rounded-full font-medium hover:bg-university-700 transition transform hover:scale-105 shadow-lg shadow-university-200/50">Registrarse</a>
+                }
             </div>
         </nav>
     </header>
 
-    <main role="main" class="pb-3">
+    <main role="main" class="flex-grow">
         @RenderBody()
     </main>
 
+    <footer class="bg-white border-t border-gray-100 py-6 text-center text-sm text-gray-400 mt-auto">
+        <p>&copy; 2026 - Universidad Tecnológica - EduNix Platform</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

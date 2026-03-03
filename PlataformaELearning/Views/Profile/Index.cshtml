@@ -1,0 +1,63 @@
+﻿@model PlataformaELearning.Models.User
+@{
+    ViewData["Title"] = "Mi Perfil Académico";
+}
+
+<div class="p-4 md:p-8 animate__animated animate__fadeIn max-w-5xl mx-auto">
+
+    <div class="mb-6 flex items-center justify-between">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800"><i class="fas fa-id-badge text-university-600 mr-2"></i> Expediente del Alumno</h1>
+        <span class="bg-green-100 text-green-700 py-1 px-3 rounded-full text-xs font-bold uppercase tracking-wider border border-green-200">
+            Estado: Activo
+        </span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="col-span-1 bg-white rounded-3xl p-8 shadow-sm border border-gray-100 text-center relative overflow-hidden">
+            <div class="w-32 h-32 mx-auto bg-gradient-to-br from-university-400 to-university-600 rounded-full flex items-center justify-center text-white text-5xl font-bold mb-4 shadow-lg ring-4 ring-university-50">
+                @Model.FirstName?.Substring(0, 1)@Model.LastName?.Substring(0, 1)
+            </div>
+
+            <h2 class="text-xl font-bold text-gray-900">@Model.FirstName @Model.LastName</h2>
+            <p class="text-university-600 font-medium mb-4">@Model.Role</p>
+
+            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100 mt-6">
+                <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Matrícula</p>
+                <p class="font-mono font-black text-gray-800 text-lg">@Model.Matricula</p>
+            </div>
+        </div>
+
+        <div class="col-span-1 md:col-span-2 bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+            <h3 class="font-bold text-xl text-gray-800 mb-6 border-b border-gray-100 pb-4">Información de Contacto</h3>
+
+            <div class="space-y-6">
+                <div class="flex items-start gap-4">
+                    <div class="bg-blue-50 w-10 h-10 rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-500">Correo Institucional</p>
+                        <p class="font-medium text-gray-900">@Model.Email</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                    <div class="bg-purple-50 w-10 h-10 rounded-lg flex items-center justify-center text-purple-600 flex-shrink-0">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-500">Teléfono Registrado</p>
+                        <p class="font-medium text-gray-900">@(string.IsNullOrEmpty(Model.Telephone) ? "No registrado" : Model.Telephone)</p>
+                    </div>
+                </div>
+
+                <div class="pt-6 mt-6 border-t border-gray-100">
+                    <button class="bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold py-2 px-6 rounded-xl transition-colors border border-gray-200 text-sm">
+                        <i class="fas fa-key mr-2"></i> Cambiar Contraseña
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

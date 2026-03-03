@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Plataforma e-Learning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.min.css" />
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        university: {
+                            50: '#f0fdf4',
+                            500: '#22c55e', // Verde Principal
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased text-gray-900">
+    <header>
+        <nav class="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="bg-university-500 p-2 rounded-lg">
+                    <i class="fas fa-graduation-cap text-white text-xl"></i>
+                </div>
+                <span class="font-bold text-xl tracking-tight text-gray-800">Edu<span class="text-university-500">Nix</span></span>
+            </div>
+            <div class="flex gap-4">
+                <a asp-controller="Account" asp-action="Login" class="text-gray-600 hover:text-university-600 font-medium transition">Entrar</a>
+                <a asp-controller="Account" asp-action="Register" class="bg-university-600 text-white px-5 py-2 rounded-full font-medium hover:bg-university-700 transition transform hover:scale-105 shadow-lg shadow-university-200">Registrarse</a>
+            </div>
+        </nav>
+    </header>
+
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

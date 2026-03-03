@@ -1,0 +1,104 @@
+﻿@model PlataformaELearning.Models.User
+@{
+    ViewData["Title"] = "Registro de Alumno";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+<div class="min-h-screen py-12 px-4 relative">
+
+    <div class="absolute top-20 left-10 w-72 h-72 bg-university-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
+    <div class="absolute top-20 right-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
+
+    <div class="max-w-2xl mx-auto glass-card p-10 rounded-[2.5rem] shadow-2xl animate__animated animate__zoomIn relative z-10">
+        <div class="text-center mb-10">
+            <div class="inline-flex bg-university-100 p-4 rounded-2xl mb-4 shadow-inner">
+                <i class="fas fa-user-plus text-university-600 text-3xl"></i>
+            </div>
+            <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Crea tu cuenta</h2>
+            <p class="text-gray-500 mt-2 font-medium">Únete a la plataforma de aprendizaje más avanzada de la universidad.</p>
+        </div>
+
+        <form asp-action="Register" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div asp-validation-summary="ModelOnly" class="hidden"></div>
+
+            <div class="space-y-2 group">
+                <label class="text-sm font-bold text-gray-700 ml-1 group-focus-within:text-university-600 transition-colors">Nombre(s)</label>
+                <input asp-for="FirstName" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-university-500 outline-none transition-all shadow-sm" placeholder="Juan" />
+            </div>
+
+            <div class="space-y-2 group">
+                <label class="text-sm font-bold text-gray-700 ml-1 group-focus-within:text-university-600 transition-colors">Apellido(s)</label>
+                <input asp-for="LastName" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-university-500 outline-none transition-all shadow-sm" placeholder="Pérez" />
+            </div>
+
+            <div class="space-y-2 col-span-2 group">
+                <label class="text-sm font-bold text-gray-700 ml-1 group-focus-within:text-university-600 transition-colors">Matrícula Universitaria</label>
+                <div class="relative">
+                    <i class="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-university-500 transition-colors"></i>
+                    <input asp-for="Matricula" class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-university-500 outline-none transition-all shadow-sm" placeholder="22300XXX" />
+                </div>
+            </div>
+
+            <div class="space-y-2 col-span-2 group">
+                <label class="text-sm font-bold text-gray-700 ml-1 group-focus-within:text-university-600 transition-colors">Correo Electrónico</label>
+                <div class="relative">
+                    <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-university-500 transition-colors"></i>
+                    <input asp-for="Email" type="email" class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-university-500 outline-none transition-all shadow-sm" placeholder="alumno@dominio.com" />
+                </div>
+            </div>
+
+            <div class="space-y-2 col-span-2 md:col-span-1 group">
+                <label class="text-sm font-bold text-gray-700 ml-1 group-focus-within:text-university-600 transition-colors">Contraseña</label>
+                <input asp-for="Password" type="password" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-university-500 outline-none transition-all shadow-sm" placeholder="••••••••" />
+            </div>
+
+            <div class="space-y-2 col-span-2 md:col-span-1 group">
+                <label class="text-sm font-bold text-gray-700 ml-1 group-focus-within:text-university-600 transition-colors">Teléfono</label>
+                <input asp-for="Telephone" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-university-500 outline-none transition-all shadow-sm" placeholder="773..." />
+            </div>
+
+            <button type="submit" class="col-span-2 mt-6 bg-university-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-university-700 transition-all transform hover:scale-[1.02] shadow-xl hover:shadow-university-500/50 flex items-center justify-center gap-3">
+                <i class="fas fa-paper-plane"></i>
+                Finalizar Registro
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function () {
+            toastr.options = {
+                "closeButton": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "6000",
+                "extendedTimeOut": "2000"
+            };
+
+            // Interceptar errores de validación del lado del servidor (C#)
+            @if (!ViewData.ModelState.IsValid)
+            {
+                    var errors = ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    foreach (var error in errors)
+                    {
+                            <text>toastr.warning('@error', 'Verifica tus datos');</text>
+                    }
+            }
+
+            // Integración para mostrar errores de validación del lado del cliente (jQuery Validate)
+            $("form").on("submit", function (e) {
+                if (!$(this).valid()) {
+                    toastr.error('Por favor, completa correctamente todos los campos obligatorios antes de continuar.', 'Formulario Incompleto');
+                }
+            });
+        });
+    </script>
+}

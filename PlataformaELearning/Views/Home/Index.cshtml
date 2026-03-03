@@ -1,0 +1,96 @@
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Portal Institucional";
+    // Rescatamos los datos institucionales desde los Claims que guardaste en el Login
+    var matricula = User.Claims.FirstOrDefault(c => c.Type == "Matricula")?.Value ?? "Pendiente";
+    var rol = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Estudiante";
+}
+
+<div class="p-4 md:p-8 animate__animated animate__fadeIn max-w-7xl mx-auto">
+
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center bg-gradient-to-r from-white to-university-50 relative overflow-hidden">
+        <div class="absolute -right-20 -top-20 w-64 h-64 bg-university-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10"></div>
+
+        <div class="relative z-10">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="bg-university-100 text-university-700 py-1 px-3 rounded-full text-xs font-bold uppercase tracking-wider border border-university-200">Ciclo Escolar 2026</span>
+                <span class="bg-blue-100 text-blue-700 py-1 px-3 rounded-full text-xs font-bold uppercase tracking-wider border border-blue-200">
+                    <i class="fas fa-user-graduate mr-1"></i> @rol
+                </span>
+            </div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Portal Académico Institucional</h1>
+            <p class="text-gray-500 mt-1 text-lg">Bienvenido(a), <span class="font-bold text-university-700">@User.Identity?.Name</span></p>
+        </div>
+
+        <div class="mt-6 md:mt-0 text-left md:text-right relative z-10 bg-white/60 p-4 rounded-2xl backdrop-blur-sm border border-gray-100">
+            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Matrícula Oficial</p>
+            <p class="text-2xl font-mono font-black text-gray-800 tracking-wider">@matricula</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+        <div class="md:col-span-8 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-university-50 rounded-bl-[100px] -z-0 transition-transform duration-500 group-hover:scale-110"></div>
+
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="bg-university-100 w-14 h-14 rounded-2xl flex items-center justify-center text-university-600 shadow-inner">
+                        <i class="fas fa-chalkboard-teacher text-2xl"></i>
+                    </div>
+                    <button class="text-university-600 font-bold text-sm hover:underline flex items-center gap-1">
+                        Ir al Campus Virtual <i class="fas fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+                <h3 class="font-bold text-2xl text-gray-800 mb-2">Aulas Virtuales</h3>
+                <p class="text-gray-500 mb-6 font-medium">Accede a tus materias activas, material didáctico y gestión de cursos.</p>
+
+                <div class="w-full bg-gray-100 rounded-full h-3 mb-2 shadow-inner overflow-hidden">
+                    <div class="bg-gradient-to-r from-university-400 to-university-600 h-3 rounded-full relative" style="width: 65%">
+                        <div class="absolute top-0 right-0 bottom-0 left-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAiLz4KPHBhdGggZD0iTTAgMEw4IDhaTTggMEwwIDhaIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPgo8L3N2Zz4=')]"></div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 font-bold text-right uppercase tracking-wider">Avance del cuatrimestre: 65%</p>
+            </div>
+        </div>
+
+        <div class="md:col-span-4 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 border-t-4 border-t-blue-500 flex flex-col justify-between">
+            <div>
+                <div class="bg-blue-50 w-14 h-14 rounded-2xl flex items-center justify-center text-blue-600 mb-6 shadow-inner">
+                    <i class="fas fa-clipboard-check text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-xl text-gray-800 mb-2">Sistema de Evaluación</h3>
+                <p class="text-gray-500 text-sm mb-6 font-medium">Consulta tu historial académico, exámenes y retroalimentación docente.</p>
+            </div>
+            <a href="#" class="block w-full text-center bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold py-3.5 rounded-xl transition-colors border border-gray-200">
+                Ver Kardex Oficial
+            </a>
+        </div>
+
+        <div class="md:col-span-6 bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-6 hover:shadow-md transition-all duration-300 group cursor-pointer">
+            <div class="bg-purple-100 p-4 rounded-2xl text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                <i class="fas fa-comments text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg text-gray-800">Foros y Videoconferencias</h3>
+                <p class="text-gray-500 text-sm mt-1 font-medium">Herramientas interactivas y sesiones en vivo.</p>
+            </div>
+        </div>
+
+        <div class="md:col-span-6 bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-3xl shadow-lg text-white relative overflow-hidden flex items-center">
+            <i class="fas fa-university absolute -right-4 top-1/2 -translate-y-1/2 text-8xl text-white opacity-5"></i>
+            <div>
+                <div class="flex items-center gap-2 mb-2 text-university-400">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-university-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-university-500"></span>
+                    </span>
+                    <span class="text-xs font-bold uppercase tracking-wider">Aviso de Servicios Escolares</span>
+                </div>
+                <h3 class="font-bold text-lg mb-1">Actualización de Plataforma</h3>
+                <p class="text-gray-300 text-sm">El sistema de e-learning ha sido optimizado para mejorar la escalabilidad y soporte.</p>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -26,7 +26,8 @@ namespace PlataformaELearning.Models
         [Required]
         public string Matricula { get; set; } = string.Empty;
 
-        public string Role { get; set; } = "Alumno";       
-        public string? ProfilePicturePath { get; set; }
+        public string Role { get; set; } = "Alumno";
+        public byte[]? ProfilePicture { get; set; }
+        public string? ContentType { get; set; }
     }
 }

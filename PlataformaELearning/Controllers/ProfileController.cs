@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient; // Requerido para evitar el crash de memoria
 using PlataformaELearning.Data;
 using System.Security.Claims;
+using System.IO;
 
 namespace PlataformaELearning.Controllers
 {
@@ -10,13 +12,10 @@ namespace PlataformaELearning.Controllers
     public class ProfileController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        // Inyectamos IWebHostEnvironment para saber dónde guardar los archivos físicamente
-        public ProfileController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public ProfileController(ApplicationDbContext context)
         {
             _context = context;
-            _webHostEnvironment = webHostEnvironment;
         }
 
         public async Task<IActionResult> Index()
@@ -43,9 +42,10 @@ namespace PlataformaELearning.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            if (file.Length > 10 * 1024 * 1024)
+            // Límite ajustado a 5MB para no saturar la memoria ni la base de datos
+            if (file.Length > 5 * 1024 * 1024)
             {
-                TempData["ErrorMessage"] = "La imagen es demasiado pesada. El límite es 10MB.";
+                TempData["ErrorMessage"] = "La imagen es demasiado pesada. El límite es 5MB.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -66,51 +66,47 @@ namespace PlataformaELearning.Controllers
 
             try
             {
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-                if (user == null) return NotFound();
+                // Solo verificamos que exista, no cargamos todo el objeto a memoria
+                var userExists = await _context.Users.AnyAsync(u => u.Email == email);
+                if (!userExists) return NotFound("Usuario no encontrado.");
 
-                // 1. SOLUCIÓN RAÍZ: Manejo seguro del WebRootPath
-                string webRootPath = _webHostEnvironment.WebRootPath;
-                if (string.IsNullOrWhiteSpace(webRootPath))
+                byte[] fileBytes;
+                using (var memoryStream = new MemoryStream())
                 {
-                    // Si es nulo, lo forzamos a apuntar a la carpeta base del proyecto
-                    webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                    await file.CopyToAsync(memoryStream);
+                    fileBytes = memoryStream.ToArray();
                 }
 
-                string uploadsFolder = Path.Combine(webRootPath, "uploads", "profiles");
-
-                // Creamos la carpeta físicamente si no existe
-                if (!Directory.Exists(uploadsFolder))
+                // SOLUCIÓN AL CIERRE INESPERADO (Crash 0xffffffff)
+                // Usamos ADO.NET para enviar el flujo binario directamente a SQL Server
+                var connectionString = _context.Database.GetConnectionString();
+                if (string.IsNullOrEmpty(connectionString))
                 {
-                    Directory.CreateDirectory(uploadsFolder);
+                    throw new Exception("No se pudo obtener la cadena de conexión.");
                 }
 
-                string uniqueFileName = $"{Guid.NewGuid()}_{user.Matricula}{extension}";
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                using (var connection = new SqlConnection(connectionString))
                 {
-                    await file.CopyToAsync(fileStream);
-                }
+                    await connection.OpenAsync();
 
-                // 2. SOLUCIÓN AL BORRADO: Sintaxis correcta con .Delete()
-                if (!string.IsNullOrEmpty(user.ProfilePicturePath))
-                {
-                    string oldPath = Path.Combine(webRootPath, user.ProfilePicturePath.TrimStart('/'));
-                    if (System.IO.File.Exists(oldPath))
+                    string sql = "UPDATE Users SET ProfilePicture = @Photo, ContentType = @Type WHERE Email = @Email";
+                    using (var command = new SqlCommand(sql, connection))
                     {
-                        System.IO.File.Delete(oldPath);
+                        // Se define explícitamente como VarBinary de longitud máxima
+                        command.Parameters.Add("@Photo", System.Data.SqlDbType.VarBinary, -1).Value = fileBytes;
+                        command.Parameters.AddWithValue("@Type", file.ContentType);
+                        command.Parameters.AddWithValue("@Email", email);
+
+                        await command.ExecuteNonQueryAsync();
                     }
                 }
 
-                user.ProfilePicturePath = $"/uploads/profiles/{uniqueFileName}";
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Foto de perfil actualizada correctamente.";
+                TempData["SuccessMessage"] = "Foto de perfil actualizada correctamente en la base de datos.";
             }
             catch (Exception ex)
             {
-                // 3. DEBUGGING: Si falla, mandamos el mensaje real al Toastr, no explotará la vista
+                // Registramos en consola para diagnóstico futuro sin tirar la app
+                Console.WriteLine($"Error crítico al guardar imagen: {ex}");
                 TempData["ErrorMessage"] = $"Error interno del servidor: {ex.Message}";
             }
 

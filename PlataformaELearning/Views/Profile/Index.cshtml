@@ -17,9 +17,11 @@
         <div class="col-span-1 bg-white rounded-3xl p-8 shadow-sm border border-gray-100 text-center relative overflow-hidden">
 
             <div class="relative w-32 h-32 mx-auto mb-4 group">
-                @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+                @if (Model.ProfilePicture != null && Model.ProfilePicture.Length > 0)
                 {
-                    <img src="@Model.ProfilePicturePath" alt="Foto de perfil" class="w-full h-full object-cover rounded-full shadow-lg ring-4 ring-university-50" />
+                    var base64 = Convert.ToBase64String(Model.ProfilePicture);
+                    var imgSrc = $"data:{Model.ContentType};base64,{base64}";
+                    <img src="@imgSrc" alt="Foto de perfil" class="w-full h-full object-cover rounded-full shadow-lg ring-4 ring-university-50" />
                 }
                 else
                 {
@@ -35,7 +37,7 @@
             </div>
 
             <form id="uploadForm" asp-controller="Profile" asp-action="UploadProfilePicture" method="post" enctype="multipart/form-data" class="hidden">
-                <input type="file" id="profileUpload" name="file" accept="image/png, image/jpeg, image/webp" onchange="document.getElementById('uploadForm').submit();" />
+                <input type="file" id="profileUpload" name="file" accept="image/png, image/jpeg, image/webp" onchange="handleFileSelection(event);" />
             </form>
 
             <h2 class="text-xl font-bold text-gray-900">@Model.FirstName @Model.LastName</h2>
@@ -81,10 +83,32 @@
     </div>
 </div>
 
+<div id="imagePreviewModal" class="fixed inset-0 bg-gray-900/75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl animate__animated animate__zoomIn">
+        <h3 class="text-xl font-bold text-gray-800 mb-2 text-center">Confirmar nueva foto</h3>
+        <p class="text-sm text-gray-500 text-center mb-6">¿Deseas usar esta imagen como tu foto de perfil?</p>
+
+        <div class="flex justify-center mb-6">
+            <div class="relative w-40 h-40">
+                <img id="modalImagePreview" src="" alt="Previsualización" class="w-full h-full object-cover rounded-full shadow-md ring-4 ring-gray-100" />
+            </div>
+        </div>
+
+        <div class="flex gap-3 w-full">
+            <button type="button" onclick="closeModal()" class="w-1/2 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors">
+                Cancelar
+            </button>
+            <button type="button" onclick="submitImage()" class="w-1/2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors flex justify-center items-center gap-2">
+                <i class="fas fa-cloud-upload-alt"></i> Guardar
+            </button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // Toastr para mostrar si el upload fue exitoso o hubo error (requiere Toastr JS cargado en tu _Layout)
+            // Mensajes TempData del Servidor
             @if (TempData["SuccessMessage"] != null)
             {
                     <text>toastr.success('@TempData["SuccessMessage"]');</text>
@@ -94,5 +118,52 @@
                     <text>toastr.error('@TempData["ErrorMessage"]');</text>
             }
         });
+
+        // Lógica de Validación Frontend y Modal
+        function handleFileSelection(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 1. Validar Tipo de Archivo
+            const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+            if (!validTypes.includes(file.type)) {
+                toastr.warning('Formato no válido. Selecciona JPG, PNG o WEBP.');
+                event.target.value = ''; // Limpiar input
+                return;
+            }
+
+            // 2. Validar Tamaño (5MB = 5 * 1024 * 1024 bytes)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                toastr.warning('La imagen es muy pesada. El límite es 5MB.');
+                event.target.value = ''; // Limpiar input
+                return;
+            }
+
+            // 3. Leer imagen y mostrar Modal
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('modalImagePreview').src = e.target.result;
+                document.getElementById('imagePreviewModal').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function closeModal() {
+            document.getElementById('imagePreviewModal').classList.add('hidden');
+            document.getElementById('profileUpload').value = ''; // Resetear archivo para permitir seleccionar el mismo de nuevo si se arrepiente
+        }
+
+                function submitImage() {
+            // Referenciamos el botón por ID o clase en lugar de event.currentTarget
+            const btn = document.querySelector('#imagePreviewModal button.bg-blue-600');
+            if(btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            }
+
+            // Forzamos el envío tradicional del formulario
+            document.getElementById('uploadForm').submit();
+        }
     </script>
 }

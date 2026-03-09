@@ -15,9 +15,28 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <div class="col-span-1 bg-white rounded-3xl p-8 shadow-sm border border-gray-100 text-center relative overflow-hidden">
-            <div class="w-32 h-32 mx-auto bg-gradient-to-br from-university-400 to-university-600 rounded-full flex items-center justify-center text-white text-5xl font-bold mb-4 shadow-lg ring-4 ring-university-50">
-                @Model.FirstName?.Substring(0, 1)@Model.LastName?.Substring(0, 1)
+
+            <div class="relative w-32 h-32 mx-auto mb-4 group">
+                @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+                {
+                    <img src="@Model.ProfilePicturePath" alt="Foto de perfil" class="w-full h-full object-cover rounded-full shadow-lg ring-4 ring-university-50" />
+                }
+                else
+                {
+                    <div class="w-full h-full bg-gradient-to-br from-university-400 to-university-600 rounded-full flex items-center justify-center text-white text-5xl font-bold shadow-lg ring-4 ring-university-50">
+                        @Model.FirstName?.Substring(0, 1)@Model.LastName?.Substring(0, 1)
+                    </div>
+                }
+
+                <label for="profileUpload" class="absolute inset-0 bg-black/50 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer backdrop-blur-sm">
+                    <i class="fas fa-camera text-xl mb-1"></i>
+                    <span class="text-xs font-bold">Cambiar</span>
+                </label>
             </div>
+
+            <form id="uploadForm" asp-controller="Profile" asp-action="UploadProfilePicture" method="post" enctype="multipart/form-data" class="hidden">
+                <input type="file" id="profileUpload" name="file" accept="image/png, image/jpeg, image/webp" onchange="document.getElementById('uploadForm').submit();" />
+            </form>
 
             <h2 class="text-xl font-bold text-gray-900">@Model.FirstName @Model.LastName</h2>
             <p class="text-university-600 font-medium mb-4">@Model.Role</p>
@@ -61,3 +80,19 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Toastr para mostrar si el upload fue exitoso o hubo error (requiere Toastr JS cargado en tu _Layout)
+            @if (TempData["SuccessMessage"] != null)
+            {
+                    <text>toastr.success('@TempData["SuccessMessage"]');</text>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                    <text>toastr.error('@TempData["ErrorMessage"]');</text>
+            }
+        });
+    </script>
+}

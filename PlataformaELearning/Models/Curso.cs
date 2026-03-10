@@ -46,9 +46,11 @@ namespace PlataformaELearning.Models
         // Para anuncios
         public string? ContenidoTexto { get; set; }
 
-        // Para PDFs
+        // Para PDFs (Mantenemos NombreArchivo de Beto, agregamos los binarios para SQL)
         public string? RutaArchivo { get; set; }
         public string? NombreArchivo { get; set; }
+        public byte[]? ArchivoFisico { get; set; }
+        public string? ContentType { get; set; }
 
         // Para videos
         public string? UrlVideo { get; set; }

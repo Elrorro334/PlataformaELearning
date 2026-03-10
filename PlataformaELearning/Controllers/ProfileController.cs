@@ -29,6 +29,25 @@ namespace PlataformaELearning.Controllers
             return View(userProfile);
         }
 
+        [HttpGet]
+        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Client)] // El navegador recordará la imagen 1 hora
+        public async Task<IActionResult> GetAvatar()
+        {
+            string? email = User.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrEmpty(email)) return NotFound();
+
+            // Usamos Select para traer SOLO los bytes, sin cargar nombres, contraseñas, etc.
+            var userImage = await _context.Users
+                .Where(u => u.Email == email)
+                .Select(u => new { u.ProfilePicture, u.ContentType })
+                .FirstOrDefaultAsync();
+
+            if (userImage?.ProfilePicture == null || userImage.ProfilePicture.Length == 0)
+                return NotFound(); // Retorna 404 si no tiene foto
+
+            return File(userImage.ProfilePicture, userImage.ContentType ?? "image/jpeg");
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadProfilePicture(IFormFile file)

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlataformaELearning.Data;
 using PlataformaELearning.Models;
+using PlataformaELearning.Models.ViewModels;
 using System.Security.Claims;
 
 namespace PlataformaELearning.Controllers
@@ -189,5 +190,78 @@ namespace PlataformaELearning.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpGet]
+        public IActionResult CreateMaestro()
+        {
+            return View(new CreateMaestroViewModel());
+        }
+
+        // 8. GUARDAR MAESTRO Y CURSO EN TRANSACCIÓN (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateMaestro(CreateMaestroViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            string emailNormalizado = model.Email.Trim().ToLower();
+            string matriculaNormalizada = model.Matricula.Trim();
+
+            // Verificar duplicados de usuario
+            bool existeUsuario = await _context.Users.AsNoTracking()
+                .AnyAsync(u => u.Email == emailNormalizado || u.Matricula == matriculaNormalizada);
+
+            if (existeUsuario)
+            {
+                ModelState.AddModelError(string.Empty, "El correo electrónico o la matrícula ya están registrados en el sistema.");
+                return View(model);
+            }
+
+            // Iniciamos la transacción: Si falla el curso, no se guarda el maestro
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // PASO A: Crear el Maestro
+                var nuevoMaestro = new User
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = emailNormalizado,
+                    Matricula = matriculaNormalizada,
+                    Telephone = model.Telephone,
+                    Role = "Maestro",
+                    Password = BCrypt.Net.BCrypt.HashPassword(model.Password)
+                };
+
+                _context.Users.Add(nuevoMaestro);
+                await _context.SaveChangesAsync(); // Al guardar, EF Core le asigna un Id a nuevoMaestro
+
+                // PASO B: Crear el Curso asignándole el Id del maestro recién creado
+                var nuevoCurso = new Curso
+                {
+                    Nombre = model.NombreCurso,
+                    Descripcion = model.DescripcionCurso,
+                    MaestroId = nuevoMaestro.Id // Llave foránea resuelta
+                };
+
+                _context.Cursos.Add(nuevoCurso);
+                await _context.SaveChangesAsync();
+
+                // Confirmamos la transacción (Guardamos ambos definitivamente)
+                await transaction.CommitAsync();
+
+                TempData["SuccessMessage"] = $"El maestro {nuevoMaestro.FirstName} y su curso '{nuevoCurso.Nombre}' fueron registrados exitosamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                // Si algo truena (ej. desconexión de base de datos), se deshace la creación del maestro
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error crítico de transacción al crear Maestro y Curso simultáneamente.");
+                ModelState.AddModelError(string.Empty, "Ocurrió un error interno al intentar crear el maestro y su curso.");
+                return View(model);
+            }
+        }
+
     }
 }

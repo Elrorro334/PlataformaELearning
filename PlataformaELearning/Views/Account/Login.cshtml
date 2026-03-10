@@ -1,0 +1,98 @@
+﻿@{
+    ViewData["Title"] = "Iniciar Sesión";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+<div class="min-h-[calc(100vh-80px)] flex items-center justify-center p-4">
+    <div class="max-w-4xl w-full grid md:grid-cols-2 bg-white rounded-3xl overflow-hidden shadow-2xl animate__animated animate__fadeIn">
+
+        <div class="bg-university-600 p-12 text-white flex flex-col justify-center relative overflow-hidden">
+            <div class="relative z-10">
+                <h2 class="text-4xl font-bold mb-6">Bienvenido de vuelta, Universitario.</h2>
+                <p class="text-university-100 text-lg">Accede a tus cursos, horarios y calificaciones en un solo lugar.</p>
+            </div>
+            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-university-500 rounded-full opacity-50 blur-xl"></div>
+            <div class="absolute -top-10 -right-10 w-60 h-60 bg-university-700 rounded-full opacity-50 blur-xl"></div>
+        </div>
+
+        <div class="p-12">
+            <div class="mb-10">
+                <h3 class="text-2xl font-bold text-gray-800">Iniciar Sesión</h3>
+                <p class="text-gray-500">Ingresa tus credenciales académicas</p>
+            </div>
+
+            <form asp-action="Login" method="post" class="space-y-6">
+                <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+
+                <div class="space-y-2 group">
+                    <label class="text-sm font-semibold text-gray-700 ml-1 group-focus-within:text-university-600 transition-colors">Correo Institucional</label>
+                    <div class="relative">
+                        <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-university-500 transition-colors"></i>
+                        <input name="email" type="email" class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-university-500 focus:border-transparent outline-none transition-all shadow-sm" placeholder="ejemplo@uttt.edu.mx" required />
+                    </div>
+                </div>
+
+                <div class="space-y-2 group">
+                    <label class="text-sm font-semibold text-gray-700 ml-1 group-focus-within:text-university-600 transition-colors">Contraseña</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-university-500 transition-colors"></i>
+                        <input name="password" type="password" class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-university-500 focus:border-transparent outline-none transition-all shadow-sm" placeholder="••••••••" required />
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="rememberMe" class="rounded border-gray-300 text-university-600 focus:ring-university-500 transition">
+                        <span class="text-gray-600 font-medium">Recordarme</span>
+                    </label>
+
+                    <a asp-action="ForgotPassword" class="text-university-600 font-bold hover:text-university-700 hover:underline transition">¿Olvidaste tu contraseña?</a>
+                </div>
+
+                <button type="submit" class="w-full bg-university-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-university-700 transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-university-500/50">
+                    Entrar al Portal
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Configuración visual profesional de Toastr
+            toastr.options = {
+                "closeButton": true,
+                "progressBar": true,
+                "positionClass": "toast-bottom-right",
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+
+            // Notificaciones de éxito (ej. Viene del registro)
+            @if (TempData["SuccessMessage"] != null)
+            {
+                    <text>toastr.success('@TempData["SuccessMessage"]', '¡Éxito!');</text>
+            }
+
+            // Integración profunda con el backend: Lee los errores de validación de C#
+            @if (!ViewData.ModelState.IsValid)
+            {
+                    var errors = ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    foreach (var error in errors)
+                    {
+                            <text>toastr.error('@error', 'Error de Autenticación');</text>
+                    }
+            }
+        });
+    </script>
+}

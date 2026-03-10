@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PlataformaELearning.Models;
 
 namespace PlataformaELearning.Data
@@ -12,12 +12,22 @@ namespace PlataformaELearning.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Curso> Cursos { get; set; }
+        
+        // Tablas agregadas por Beto
         public DbSet<ContenidoCurso> ContenidosCursos { get; set; }
+        
+        // Tablas agregadas en secondbranch
+        public DbSet<Inscripcion> Inscripciones { get; set; }
+        public DbSet<Calificacion> Calificaciones { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // ==========================================
+            // Configuraciones de Beto para Cursos y Contenidos
+            // ==========================================
+            
             // Configuración para Curso
             modelBuilder.Entity<Curso>()
                 .HasOne(c => c.Maestro)
@@ -45,12 +55,12 @@ namespace PlataformaELearning.Data
                 .HasIndex(c => c.Tipo)
                 .HasDatabaseName("IX_ContenidoCurso_Tipo");
 
-            // Si tu modelo User tiene propiedades específicas, puedes configurarlas aquí
-            // Por ejemplo, si User tiene una colección de cursos:
-            // modelBuilder.Entity<User>()
-            //     .HasMany(u => u.Cursos)
-            //     .WithOne(c => c.Maestro)
-            //     .HasForeignKey(c => c.MaestroId);
+            // ==========================================
+            // Configuraciones de secondbranch (Inscripciones/Calificaciones)
+            // ==========================================
+            // Las anotaciones [ForeignKey] en los modelos de Inscripcion y Calificacion 
+            // son suficientes por ahora, pero si necesitas reglas DeleteBehavior.Restrict 
+            // para evitar borrar alumnos con calificaciones, se agregarían aquí.
         }
     }
 }

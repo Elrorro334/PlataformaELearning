@@ -16,6 +16,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.Name = "EduNixAuthCookie";
     });
 
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 50 * 1024 * 1024;
+});
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

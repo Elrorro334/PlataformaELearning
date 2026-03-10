@@ -32,7 +32,7 @@
 <body class="bg-gray-50 font-sans antialiased text-gray-900 flex flex-col min-h-screen">
     <header>
         <nav class="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-50">
-
+            
             <div class="flex items-center gap-8">
                 <a asp-controller="Home" asp-action="Index" class="flex items-center gap-2">
                     <div class="bg-university-600 p-2 rounded-lg shadow-inner">
@@ -44,22 +44,21 @@
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
                     <div class="hidden md:flex items-center gap-5 border-l border-gray-200 pl-8">
-
+                        
                         @if (User.IsInRole("Administrador"))
                         {
-                            <a href="#" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-chart-line mr-1"></i> Panel General</a>
-                            <a href="#" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-users-cog mr-1"></i> Gestionar Usuarios</a>
-                            <a href="#" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-cogs mr-1"></i> Configuración</a>
+                            <a asp-controller="Admin" asp-action="Index" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-users-cog mr-1"></i> Gestionar Usuarios</a>
+                            <a asp-controller="Cursos" asp-action="Index" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-book-open mr-1"></i> Gestión de Cursos</a>
+                            <a asp-controller="Cursos" asp-action="Create" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-plus-circle mr-1"></i> Nuevo Curso</a>
                         }
                         else if (User.IsInRole("Maestro"))
                         {
-                            <a href="#" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-chalkboard-teacher mr-1"></i> Mis Grupos</a>
+                            <a asp-controller="Cursos" asp-action="Index" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-chalkboard-teacher mr-1"></i> Mis Cursos</a>
                             <a href="#" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-tasks mr-1"></i> Evaluar Tareas</a>
-                            <a href="#" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-folder-open mr-1"></i> Materiales</a>
                         }
                         else if (User.IsInRole("Alumno"))
                         {
-                            <a href="#" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-book mr-1"></i> Mis Cursos</a>
+                            <a asp-controller="Cursos" asp-action="Index" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-book mr-1"></i> Mis Cursos</a>
                             <a href="#" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-star mr-1"></i> Calificaciones</a>
                         }
                     </div>
@@ -80,10 +79,10 @@
                             var initials = displayName.Length > 1 ? displayName.Substring(0, 2).ToUpper() : displayName.ToUpper();
                         }
                         <span id="nav-initials" class="font-bold text-sm tracking-widest z-0">@initials</span>
-                        <img src="@Url.Action("GetAvatar", "Profile")"
+                        <img src="@Url.Action("GetAvatar", "Profile")" 
                              onload="document.getElementById('nav-initials').style.display='none';"
                              onerror="this.style.display='none';"
-                             class="absolute inset-0 w-full h-full object-cover z-10"
+                             class="absolute inset-0 w-full h-full object-cover z-10" 
                              alt="Avatar" />
                     </a>
 
@@ -112,6 +111,18 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "5000",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

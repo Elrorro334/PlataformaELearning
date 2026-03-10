@@ -24,10 +24,6 @@ namespace PlataformaELearning.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // ==========================================
-            // Configuraciones de Beto para Cursos y Contenidos
-            // ==========================================
-            
             // Configuración para Curso
             modelBuilder.Entity<Curso>()
                 .HasOne(c => c.Maestro)
@@ -54,13 +50,6 @@ namespace PlataformaELearning.Data
             modelBuilder.Entity<ContenidoCurso>()
                 .HasIndex(c => c.Tipo)
                 .HasDatabaseName("IX_ContenidoCurso_Tipo");
-
-            // ==========================================
-            // Configuraciones de secondbranch (Inscripciones/Calificaciones)
-            // ==========================================
-            // Las anotaciones [ForeignKey] en los modelos de Inscripcion y Calificacion 
-            // son suficientes por ahora, pero si necesitas reglas DeleteBehavior.Restrict 
-            // para evitar borrar alumnos con calificaciones, se agregarían aquí.
         }
     }
 }

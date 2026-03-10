@@ -1,0 +1,104 @@
+﻿@model IEnumerable<PlataformaELearning.Models.Curso>
+
+@{
+    ViewData["Title"] = "Gestión de Cursos";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Gestión de Cursos</h1>
+            <p class="text-gray-600 mt-2">Administra todos tus cursos desde aquí</p>
+        </div>
+        <a asp-action="Create" class="bg-university-600 hover:bg-university-700 text-white font-medium py-2.5 px-5 rounded-lg transition transform hover:scale-105 shadow-lg shadow-university-200 flex items-center gap-2">
+            <i class="fas fa-plus-circle"></i>
+            Nuevo Curso
+        </a>
+    </div>
+
+    <!-- Tabla de Cursos -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Curso</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profesor</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contenidos</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach (var item in Model)
+                    {
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10 bg-university-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-book text-university-600"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">@item.Nombre</div>
+                                        <div class="text-sm text-gray-500">ID: @item.Id</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900 max-w-xs truncate">@(item.Descripcion ?? "Sin descripción")</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">@(item.Maestro?.Email ?? "Sin asignar")</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 bg-university-100 text-university-700 rounded-full text-sm font-medium">
+                                    @(item.Contenidos?.Count() ?? 0) items
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <a asp-action="Details" asp-route-id="@item.Id" 
+                                       class="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg transition" 
+                                       title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" 
+                                       class="text-amber-600 hover:text-amber-800 p-2 hover:bg-amber-50 rounded-lg transition" 
+                                       title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-action="AgregarContenido" asp-route-cursoId="@item.Id" 
+                                       class="text-green-600 hover:text-green-800 p-2 hover:bg-green-50 rounded-lg transition" 
+                                       title="Agregar contenido">
+                                        <i class="fas fa-plus-circle"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" 
+                                       class="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg transition" 
+                                       title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        @if (!Model.Any())
+        {
+            <div class="text-center py-12">
+                <div class="text-gray-400 mb-4">
+                    <i class="fas fa-book-open text-6xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No hay cursos creados</h3>
+                <p class="text-gray-500 mb-4">Comienza creando tu primer curso</p>
+                <a asp-action="Create" class="bg-university-600 text-white px-6 py-2 rounded-lg hover:bg-university-700 inline-flex items-center gap-2">
+                    <i class="fas fa-plus"></i>
+                    Crear Curso
+                </a>
+            </div>
+        }
+    </div>
+</div>

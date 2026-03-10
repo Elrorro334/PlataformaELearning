@@ -1,0 +1,85 @@
+﻿@model PlataformaELearning.Models.ContenidoCurso
+
+@{
+    ViewData["Title"] = "Agregar Contenido";
+    int cursoId = ViewBag.CursoId;
+    string cursoNombre = ViewBag.CursoNombre;
+}
+
+<h1>Agregar Contenido al Curso: @cursoNombre</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="AgregarContenido" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="CursoId" value="@cursoId" />
+
+            <div class="form-group mb-3">
+                <label asp-for="Titulo" class="control-label"></label>
+                <input asp-for="Titulo" class="form-control" />
+                <span asp-validation-for="Titulo" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Tipo" class="control-label"></label>
+                <select asp-for="Tipo" class="form-control" asp-items="ViewBag.Tipos" id="tipoContenido">
+                    <option value="">Seleccione tipo</option>
+                </select>
+                <span asp-validation-for="Tipo" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3" id="contenidoTextoDiv" style="display:none;">
+                <label asp-for="ContenidoTexto" class="control-label">Contenido del Anuncio</label>
+                <textarea asp-for="ContenidoTexto" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="ContenidoTexto" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3" id="archivoPDFDiv" style="display:none;">
+                <label class="control-label">Archivo PDF</label>
+                <input type="file" name="archivoPDF" class="form-control" accept=".pdf" />
+                <small class="form-text text-muted">Seleccione un archivo PDF</small>
+            </div>
+
+            <div class="form-group mb-3" id="urlVideoDiv" style="display:none;">
+                <label asp-for="UrlVideo" class="control-label">URL del Video</label>
+                <input asp-for="UrlVideo" class="form-control" placeholder="https://www.youtube.com/embed/..." />
+                <span asp-validation-for="UrlVideo" class="text-danger"></span>
+                <small class="form-text text-muted">Ejemplo: https://www.youtube.com/embed/VIDEO_ID</small>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Agregar" class="btn btn-primary" />
+                <a asp-action="Details" asp-route-id="@cursoId" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            $('#tipoContenido').change(function() {
+                var tipo = $(this).val();
+
+                // Ocultar todos primero
+                $('#contenidoTextoDiv').hide();
+                $('#archivoPDFDiv').hide();
+                $('#urlVideoDiv').hide();
+
+                // Mostrar según selección
+                if (tipo == '0') { // Anuncio
+                    $('#contenidoTextoDiv').show();
+                } else if (tipo == '1') { // PDF
+                    $('#archivoPDFDiv').show();
+                } else if (tipo == '2') { // Video
+                    $('#urlVideoDiv').show();
+                }
+            });
+        });
+    </script>
+}

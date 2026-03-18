@@ -59,6 +59,8 @@ namespace PlataformaELearning.Models
         [Display(Name = "Fecha de Publicación")]
         public DateTime FechaPublicacion { get; set; } = DateTime.Now;
 
+        
+
         [ForeignKey("CursoId")]
         public Curso? Curso { get; set; }
     }

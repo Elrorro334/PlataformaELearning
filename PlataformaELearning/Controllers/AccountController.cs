@@ -120,6 +120,7 @@ namespace PlataformaELearning.Controllers
                 {
                     var claims = new List<Claim>
                     {
+                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                         new Claim(ClaimTypes.Name, user.FirstName ?? "Usuario"),
                         new Claim(ClaimTypes.Email, user.Email),
                         new Claim(ClaimTypes.Role, user.Role ?? "Alumno"),

@@ -1,0 +1,37 @@
+﻿@model PlataformaELearning.Models.Calificacion
+
+<div class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden animate__animated animate__zoomIn">
+        <div class="bg-blue-600 p-8 text-center">
+            <h2 class="text-white text-2xl font-bold">Evaluación</h2>
+            <p class="text-blue-100 mt-2">@ViewBag.AlumnoNombre</p>
+        </div>
+
+        <form asp-action="AsignarCalificacion" class="p-8 space-y-6">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CursoId" />
+            <input type="hidden" asp-for="AlumnoId" />
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Calificación (0-10)</label>
+                <input asp-for="Puntuacion" type="number" step="0.1" min="0" max="10"
+                       class="w-full px-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-3xl font-black focus:border-blue-500 outline-none transition-all text-center" />
+                <span asp-validation-for="Puntuacion" class="text-red-500 text-xs"></span>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Retroalimentación</label>
+                <textarea asp-for="Comentarios" rows="4"
+                          class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-blue-500 outline-none resize-none"
+                          placeholder="Buen trabajo..."></textarea>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:shadow-lg shadow-blue-200 transition-all">
+                    Guardar Calificación
+                </button>
+                <a asp-action="CalificarCurso" asp-route-id="@Model.CursoId" class="text-center text-gray-400 font-bold py-2">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

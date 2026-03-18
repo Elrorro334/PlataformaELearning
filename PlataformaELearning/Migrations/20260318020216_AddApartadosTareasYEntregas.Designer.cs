@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PlataformaELearning.Data;
 
@@ -11,9 +12,11 @@ using PlataformaELearning.Data;
 namespace PlataformaELearning.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260318020216_AddApartadosTareasYEntregas")]
+    partial class AddApartadosTareasYEntregas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,7 +55,7 @@ namespace PlataformaELearning.Migrations
                     b.HasIndex("CursoId")
                         .HasDatabaseName("IX_Apartado_CursoId");
 
-                    b.ToTable("ApartadosCursos", (string)null);
+                    b.ToTable("ApartadosCursos");
                 });
 
             modelBuilder.Entity("PlataformaELearning.Models.Calificacion", b =>
@@ -93,7 +96,7 @@ namespace PlataformaELearning.Migrations
 
                     b.HasIndex("TareaId");
 
-                    b.ToTable("Calificaciones", (string)null);
+                    b.ToTable("Calificaciones");
                 });
 
             modelBuilder.Entity("PlataformaELearning.Models.ContenidoCurso", b =>
@@ -144,7 +147,7 @@ namespace PlataformaELearning.Migrations
                     b.HasIndex("Tipo")
                         .HasDatabaseName("IX_ContenidoCurso_Tipo");
 
-                    b.ToTable("ContenidosCursos", (string)null);
+                    b.ToTable("ContenidosCursos");
                 });
 
             modelBuilder.Entity("PlataformaELearning.Models.Curso", b =>
@@ -172,7 +175,7 @@ namespace PlataformaELearning.Migrations
                     b.HasIndex("MaestroId")
                         .HasDatabaseName("IX_Curso_MaestroId");
 
-                    b.ToTable("Cursos", (string)null);
+                    b.ToTable("Cursos");
                 });
 
             modelBuilder.Entity("PlataformaELearning.Models.EntregaTarea", b =>
@@ -219,7 +222,7 @@ namespace PlataformaELearning.Migrations
                     b.HasIndex("TareaId")
                         .HasDatabaseName("IX_Entrega_TareaId");
 
-                    b.ToTable("EntregasTareas", (string)null);
+                    b.ToTable("EntregasTareas");
                 });
 
             modelBuilder.Entity("PlataformaELearning.Models.Inscripcion", b =>
@@ -245,7 +248,7 @@ namespace PlataformaELearning.Migrations
 
                     b.HasIndex("CursoId");
 
-                    b.ToTable("Inscripciones", (string)null);
+                    b.ToTable("Inscripciones");
                 });
 
             modelBuilder.Entity("PlataformaELearning.Models.MaterialTarea", b =>
@@ -285,7 +288,7 @@ namespace PlataformaELearning.Migrations
 
                     b.HasIndex("TareaId");
 
-                    b.ToTable("MaterialesTarea", (string)null);
+                    b.ToTable("MaterialesTarea");
                 });
 
             modelBuilder.Entity("PlataformaELearning.Models.TareaApartado", b =>
@@ -324,7 +327,7 @@ namespace PlataformaELearning.Migrations
                     b.HasIndex("FechaLimite")
                         .HasDatabaseName("IX_Tarea_FechaLimite");
 
-                    b.ToTable("TareasApartados", (string)null);
+                    b.ToTable("TareasApartados");
                 });
 
             modelBuilder.Entity("PlataformaELearning.Models.User", b =>
@@ -370,7 +373,7 @@ namespace PlataformaELearning.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("PlataformaELearning.Models.ApartadoCurso", b =>

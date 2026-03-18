@@ -1,0 +1,279 @@
+﻿@model PlataformaELearning.Models.TareaApartado
+
+@{
+    ViewData["Title"] = "Detalle de Tarea";
+    var entrega = ViewBag.Entrega as PlataformaELearning.Models.EntregaTarea;
+    var vencida = Model.FechaLimite < DateTime.Now;
+    var diasRestantes = ViewBag.DiasRestantes;
+    var horasRestantes = ViewBag.HorasRestantes;
+}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Navegación -->
+    <nav class="flex mb-6 text-sm" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a asp-action="MisTareas" class="text-gray-600 hover:text-university-600 inline-flex items-center gap-1">
+                    <i class="fas fa-arrow-left text-xs"></i>
+                    Mis Tareas
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
+                    <span class="text-university-600 font-medium">@Model.Titulo</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <!-- Cabecera con estado -->
+        <div class="px-6 py-4 border-b border-gray-100
+            @(entrega != null ? "bg-green-50" : (vencida ? "bg-red-50" : "bg-blue-50"))">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center
+                        @(entrega != null ? "bg-green-200 text-green-700" :
+                          (vencida ? "bg-red-200 text-red-700" : "bg-blue-200 text-blue-700"))">
+                        @if (entrega != null)
+                        {
+                            <i class="fas fa-check-circle text-xl"></i>
+                        }
+                        else if (vencida)
+                        {
+                            <i class="fas fa-exclamation-circle text-xl"></i>
+                        }
+                        else
+                        {
+                            <i class="fas fa-clock text-xl"></i>
+                        }
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">@Model.Titulo</h1>
+                        <p class="text-sm text-gray-600">
+                            @Model.Apartado?.Curso?.Nombre - @Model.Apartado?.Titulo
+                        </p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="inline-block px-3 py-1 rounded-full text-sm font-medium
+                        @(entrega != null ? "bg-green-200 text-green-800" :
+                          (vencida ? "bg-red-200 text-red-800" : "bg-blue-200 text-blue-800"))">
+                        @if (entrega != null)
+                        {
+                            <span>Entregada</span>
+                        }
+                        else if (vencida)
+                        {
+                            <span>Vencida</span>
+                        }
+                        else
+                        {
+                            <span>Pendiente</span>
+                        }
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Columna izquierda: Detalles y materiales -->
+                <div class="md:col-span-2 space-y-6">
+                    <!-- Descripción -->
+                    @if (!string.IsNullOrEmpty(Model.Descripcion))
+                    {
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-align-left text-university-600"></i>
+                                Descripción
+                            </h3>
+                            <p class="text-gray-700 whitespace-pre-line text-sm">@Model.Descripcion</p>
+                        </div>
+                    }
+
+                    <!-- Materiales de apoyo -->
+                    @if (Model.Materiales != null && Model.Materiales.Any())
+                    {
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                <i class="fas fa-paperclip text-university-600"></i>
+                                Materiales de apoyo (@Model.Materiales.Count())
+                            </h3>
+                            <div class="space-y-2">
+                                @foreach (var material in Model.Materiales)
+                                {
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                                        <div class="flex items-center gap-3">
+                                            @if (material.Tipo == TipoMaterial.PDF)
+                                            {
+                                                <i class="fas fa-file-pdf text-red-500 text-xl"></i>
+                                            }
+                                            else if (material.Tipo == TipoMaterial.Video)
+                                            {
+                                                <i class="fas fa-video text-blue-500 text-xl"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-file-alt text-gray-500 text-xl"></i>
+                                            }
+                                            <div>
+                                                <p class="font-medium text-gray-900">@material.Titulo</p>
+                                                <p class="text-xs text-gray-500">@material.Tipo</p>
+                                            </div>
+                                        </div>
+                                        @if (material.Tipo == TipoMaterial.PDF)
+                                        {
+                                            <a asp-controller="Apartados" asp-action="DescargarMaterial" asp-route-id="@material.Id"
+                                               class="text-university-600 hover:text-university-700 px-3 py-1 rounded hover:bg-university-50 transition"
+                                               target="_blank">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        }
+                                        else if (material.Tipo == TipoMaterial.Video && !string.IsNullOrEmpty(material.UrlVideo))
+                                        {
+                                            <a href="@material.UrlVideo" target="_blank"
+                                               class="text-university-600 hover:text-university-700 px-3 py-1 rounded hover:bg-university-50 transition">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Columna derecha: Info y entrega -->
+                <div class="space-y-4">
+                    <!-- Tarjeta de información -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-900 mb-3">Información de la tarea</h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Profesor:</span>
+                                <span class="font-medium text-gray-900">
+                                    @(Model.Apartado?.Curso?.Maestro?.FirstName ?? "No asignado")
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Fecha límite:</span>
+                                <span class="font-medium @(vencida ? "text-red-600" : "text-gray-900")">
+                                    @Model.FechaLimite.ToString("dd/MM/yyyy HH:mm")
+                                </span>
+                            </div>
+                            @if (!vencida && !entrega?.CalificacionId.HasValue == true)
+                            {
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Tiempo restante:</span>
+                                    <span class="font-medium @(diasRestantes <= 1 ? "text-amber-600" : "text-green-600")">
+                                        @if (diasRestantes > 0)
+                                        {
+                                            <span>@diasRestantes días @horasRestantes h</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@horasRestantes horas</span>
+                                        }
+                                    </span>
+                                </div>
+                            }
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Puntos posibles:</span>
+                                <span class="font-bold text-university-600">@Model.PuntosTotales pts</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de entrega -->
+                    @if (!vencida && entrega?.CalificacionId.HasValue != true)
+                    {
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                            <h3 class="font-semibold text-gray-900 mb-3">
+                                @(entrega != null ? "Actualizar entrega" : "Entregar tarea")
+                            </h3>
+
+                            <form asp-action="Entregar" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="tareaId" value="@Model.Id" />
+
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Comentario (opcional)
+                                        </label>
+                                        <textarea name="comentario" rows="2"
+                                                  class="w-full border-gray-300 rounded-lg text-sm focus:ring-university-500 focus:border-university-500"
+                                                  placeholder="Agrega un comentario sobre tu entrega...">@entrega?.ComentarioAlumno</textarea>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Archivo
+                                        </label>
+                                        <input type="file" name="archivo"
+                                               class="w-full text-sm border border-gray-300 rounded-lg p-2" />
+                                        @if (entrega?.NombreArchivo != null)
+                                        {
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                Archivo actual: @entrega.NombreArchivo
+                                                @if (entrega.ArchivoEntregado != null)
+                                                {
+                                                    <a asp-action="DescargarArchivo" asp-route-id="@entrega.Id"
+                                                       class="text-university-600 hover:underline ml-2" target="_blank">
+                                                        (Ver)
+                                                    </a>
+                                                }
+                                            </p>
+                                        }
+                                    </div>
+
+                                    <button type="submit"
+                                            class="w-full bg-university-600 hover:bg-university-700 text-white font-medium py-2 px-4 rounded-lg transition">
+                                        @(entrega != null ? "Actualizar entrega" : "Entregar tarea")
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    }
+
+                    <!-- Calificación -->
+                    @if (entrega?.Calificacion != null)
+                    {
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <h3 class="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-star text-yellow-500"></i>
+                                Calificación
+                            </h3>
+                            <div class="text-center">
+                                <span class="text-4xl font-bold text-university-600">
+                                    @entrega.Calificacion.Puntuacion
+                                </span>
+                                <span class="text-gray-500">/10</span>
+                                @if (!string.IsNullOrEmpty(entrega.Calificacion.Comentarios))
+                                {
+                                    <div class="mt-3 p-3 bg-white rounded-lg text-sm text-gray-700">
+                                        <p class="font-medium text-gray-600 mb-1">Comentario del profesor:</p>
+                                        <p>@entrega.Calificacion.Comentarios</p>
+                                    </div>
+                                }
+                                <p class="text-xs text-gray-500 mt-2">
+                                    Calificado el @entrega.Calificacion.FechaCalificacion.ToString("dd/MM/yyyy")
+                                </p>
+                            </div>
+                        </div>
+                    }
+
+                    @if (entrega != null && entrega.Calificacion == null)
+                    {
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+                            <i class="fas fa-hourglass-half text-amber-600 mb-1"></i>
+                            <p class="text-sm text-amber-800">Tu entrega está pendiente de calificación</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

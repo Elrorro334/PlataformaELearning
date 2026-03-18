@@ -1,0 +1,139 @@
+﻿@model IEnumerable<PlataformaELearning.Models.ApartadoCurso>
+
+@{
+    ViewData["Title"] = "Apartados del Curso";
+    var curso = ViewBag.Curso as PlataformaELearning.Models.Curso;
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">@curso?.Nombre</h1>
+            <p class="text-gray-600 mt-2">Gestiona los apartados y tareas del curso</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a asp-controller="Cursos" asp-action="Details" asp-route-id="@curso?.Id"
+               class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i>
+                Volver al Curso
+            </a>
+            <a asp-action="Create" asp-route-cursoId="@curso?.Id"
+               class="bg-university-600 hover:bg-university-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                <i class="fas fa-plus-circle"></i>
+                Nuevo Apartado
+            </a>
+        </div>
+    </div>
+
+    <!-- Lista de Apartados -->
+    @if (Model.Any())
+    {
+        <div class="space-y-4">
+            @foreach (var apartado in Model.OrderBy(a => a.Orden))
+            {
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition">
+                    <!-- Cabecera del apartado -->
+                    <div class="p-6 border-b border-gray-100 bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="bg-university-100 text-university-600 w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg">
+                                    @apartado.Orden
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-semibold text-gray-900">@apartado.Titulo</h2>
+                                    @if (!string.IsNullOrEmpty(apartado.Descripcion))
+                                    {
+                                        <p class="text-gray-600 text-sm mt-1">@apartado.Descripcion</p>
+                                    }
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a asp-action="Tareas" asp-route-apartadoId="@apartado.Id"
+                                   class="text-university-600 hover:text-university-700 p-2 hover:bg-university-50 rounded-lg transition"
+                                   title="Ver tareas">
+                                    <i class="fas fa-tasks"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@apartado.Id"
+                                   class="text-amber-600 hover:text-amber-700 p-2 hover:bg-amber-50 rounded-lg transition"
+                                   title="Editar apartado">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@apartado.Id"
+                                   class="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition"
+                                   title="Eliminar apartado">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tareas del apartado -->
+                    @if (apartado.Tareas != null && apartado.Tareas.Any())
+                    {
+                        <div class="divide-y divide-gray-100">
+                            @foreach (var tarea in apartado.Tareas.OrderBy(t => t.FechaLimite))
+                            {
+                                <div class="p-4 hover:bg-gray-50 transition flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-check-circle @(tarea.FechaLimite < DateTime.Now ? "text-red-500" : "text-green-500")"></i>
+                                        <div>
+                                            <a asp-action="DetallesTarea" asp-route-id="@tarea.Id" class="font-medium text-gray-900 hover:text-university-600">
+                                                @tarea.Titulo
+                                            </a>
+                                            @if (!string.IsNullOrEmpty(tarea.TipoTarea))
+                                            {
+                                                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full ml-2">@tarea.TipoTarea</span>
+                                            }
+                                            <div class="text-sm text-gray-500">
+                                                <i class="far fa-clock mr-1"></i> Límite: @tarea.FechaLimite.ToString("dd/MM/yyyy HH:mm")
+                                                @if (tarea.FechaLimite < DateTime.Now)
+                                                {
+                                                    <span class="text-red-500 ml-2">(Vencida)</span>
+                                                }
+                                                else if ((tarea.FechaLimite - DateTime.Now).TotalHours < 24)
+                                                {
+                                                    <span class="text-amber-500 ml-2">(Próxima a vencer)</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-medium text-gray-700">@tarea.PuntosTotales pts</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-8 text-center text-gray-500">
+                            <i class="fas fa-tasks text-3xl mb-2 opacity-50"></i>
+                            <p>No hay tareas en este apartado</p>
+                            <a asp-action="CreateTarea" asp-route-apartadoId="@apartado.Id"
+                               class="text-university-600 hover:text-university-700 text-sm font-medium inline-flex items-center gap-1 mt-2">
+                                <i class="fas fa-plus-circle"></i>
+                                Agregar primera tarea
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+            <div class="text-gray-400 mb-4">
+                <i class="fas fa-folder-open text-6xl"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-900 mb-2">No hay apartados creados</h3>
+            <p class="text-gray-500 mb-6">Organiza tu curso creando apartados (temas, unidades, módulos...)</p>
+            <a asp-action="Create" asp-route-cursoId="@curso?.Id"
+               class="bg-university-600 hover:bg-university-700 text-white px-6 py-3 rounded-lg inline-flex items-center gap-2">
+                <i class="fas fa-plus-circle"></i>
+                Crear Primer Apartado
+            </a>
+        </div>
+    }
+</div>

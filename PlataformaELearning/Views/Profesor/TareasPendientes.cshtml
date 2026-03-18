@@ -1,0 +1,74 @@
+﻿@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Tareas Pendientes de Calificar";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Tareas Pendientes de Calificar</h1>
+        <p class="text-gray-600 mt-2">Entregas de alumnos que esperan calificación</p>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="space-y-6">
+            @foreach (var item in Model)
+            {
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100">
+                        <h2 class="text-xl font-semibold text-gray-900">@item.Tarea.Titulo</h2>
+                        <p class="text-sm text-gray-600">@item.Tarea.Apartado.Curso.Nombre - @item.Tarea.Apartado.Titulo</p>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            @foreach (var entrega in item.EntregasSinCalificar)
+                            {
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 bg-university-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-user text-university-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-gray-900">@entrega.Alumno.FirstName @entrega.Alumno.LastName</p>
+                                            <p class="text-sm text-gray-500">Entregado: @entrega.FechaEntrega.ToString("dd/MM/yyyy HH:mm")</p>
+                                            @if (!string.IsNullOrEmpty(entrega.ComentarioAlumno))
+                                            {
+                                                <p class="text-sm text-gray-600 mt-1">📝 @entrega.ComentarioAlumno</p>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        @if (entrega.ArchivoEntregado != null)
+                                        {
+                                            <a asp-action="DescargarEntrega" asp-route-id="@entrega.Id"
+                                               class="text-university-600 hover:text-university-700 p-2 hover:bg-university-50 rounded-lg"
+                                               title="Descargar archivo">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        }
+                                        <a asp-action="CalificarEntrega" asp-route-entregaId="@entrega.Id"
+                                           class="bg-university-600 hover:bg-university-700 text-white px-4 py-2 rounded-lg">
+                                            Calificar
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+            <div class="text-gray-400 mb-4">
+                <i class="fas fa-check-circle text-6xl"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-900 mb-2">¡No hay tareas pendientes!</h3>
+            <p class="text-gray-500">Todas las entregas han sido calificadas.</p>
+        </div>
+    }
+</div>

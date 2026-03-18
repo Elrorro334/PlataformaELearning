@@ -53,8 +53,10 @@
                         }
                         else if (User.IsInRole("Maestro"))
                         {
-                            <a asp-controller="Cursos" asp-action="Index" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-chalkboard-teacher mr-1"></i> Mis Cursos</a>
-                            <a href="#" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-tasks mr-1"></i> Evaluar Tareas</a>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Profesor" asp-action="MisCursos">Mis Cursos e Notas</a>
+                            </li>
+                            <a asp-controller="Profesor" asp-action="CalificarCurso" class="text-gray-600 hover:text-university-600 font-medium transition"><i class="fas fa-tasks mr-1"></i> Evaluar Tareas</a>
                         }
                         else if (User.IsInRole("Alumno"))
                         {

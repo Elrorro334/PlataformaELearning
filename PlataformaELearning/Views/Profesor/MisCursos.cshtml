@@ -1,0 +1,26 @@
+﻿@model IEnumerable<PlataformaELearning.Models.Curso>
+
+<div class="p-8 max-w-7xl mx-auto animate__animated animate__fadeIn">
+    <div class="mb-10 border-b pb-6">
+        <h1 class="text-3xl font-extrabold text-gray-900">Mis Cursos Impartidos</h1>
+        <p class="text-gray-500">Selecciona un curso para gestionar las notas de tus estudiantes.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        @foreach (var item in Model)
+        {
+            <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl transition-all group">
+                <div class="h-32 bg-gradient-to-br from-blue-600 to-indigo-700 p-6 flex flex-col justify-end">
+                    <h3 class="text-white font-bold text-xl truncate">@item.Nombre</h3>
+                </div>
+                <div class="p-6">
+                    <p class="text-gray-500 text-sm line-clamp-2 mb-6">@item.Descripcion</p>
+                    <a asp-action="CalificarCurso" asp-route-id="@item.Id"
+                       class="w-full inline-flex justify-center items-center py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors gap-2">
+                        <i class="fas fa-user-check"></i> Calificar Alumnos
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>

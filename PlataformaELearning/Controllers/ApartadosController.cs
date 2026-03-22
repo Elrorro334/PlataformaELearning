@@ -9,7 +9,8 @@ using System.Security.Claims;
 
 namespace PlataformaELearning.Controllers
 {
-    [Authorize(Roles = "Administrador,Maestro")]
+    // ========== CAMBIO: Quitar el Authorize de la clase ==========
+    // Ya no tiene Authorize aquí, se pondrá en cada método
     public class ApartadosController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -21,7 +22,8 @@ namespace PlataformaELearning.Controllers
 
         // ==================== APARTADOS ====================
 
-        // Ver todos los apartados de un curso
+        // Ver todos los apartados de un curso (solo Admin/Maestro)
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> Index(int cursoId)
         {
             var curso = await _context.Cursos
@@ -34,7 +36,8 @@ namespace PlataformaELearning.Controllers
             return View(curso.Apartados?.ToList() ?? new List<ApartadoCurso>());
         }
 
-        // Crear nuevo apartado (GET)
+        // Crear nuevo apartado (GET) (solo Admin/Maestro)
+        [Authorize(Roles = "Administrador,Maestro")]
         public IActionResult Create(int cursoId)
         {
             var curso = _context.Cursos.Find(cursoId);
@@ -44,9 +47,10 @@ namespace PlataformaELearning.Controllers
             return View(new ApartadoCurso { CursoId = cursoId });
         }
 
-        // Crear nuevo apartado (POST)
+        // Crear nuevo apartado (POST) (solo Admin/Maestro)
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> Create(ApartadoCurso apartado)
         {
             // Asignar orden automático
@@ -70,7 +74,8 @@ namespace PlataformaELearning.Controllers
             return View(apartado);
         }
 
-        // Editar apartado (GET)
+        // Editar apartado (GET) (solo Admin/Maestro)
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> Edit(int id)
         {
             var apartado = await _context.ApartadosCursos
@@ -82,9 +87,10 @@ namespace PlataformaELearning.Controllers
             return View(apartado);
         }
 
-        // Editar apartado (POST)
+        // Editar apartado (POST) (solo Admin/Maestro)
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> Edit(int id, ApartadoCurso apartado)
         {
             if (id != apartado.Id) return NotFound();
@@ -109,7 +115,8 @@ namespace PlataformaELearning.Controllers
             return View(apartado);
         }
 
-        // Eliminar apartado (GET)
+        // Eliminar apartado (GET) (solo Admin/Maestro)
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> Delete(int id)
         {
             var apartado = await _context.ApartadosCursos
@@ -122,9 +129,10 @@ namespace PlataformaELearning.Controllers
             return View(apartado);
         }
 
-        // Eliminar apartado (POST)
+        // Eliminar apartado (POST) (solo Admin/Maestro)
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var apartado = await _context.ApartadosCursos.FindAsync(id);
@@ -139,7 +147,8 @@ namespace PlataformaELearning.Controllers
 
         // ==================== TAREAS ====================
 
-        // Ver tareas de un apartado
+        // Ver tareas de un apartado (solo Admin/Maestro)
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> Tareas(int apartadoId)
         {
             var apartado = await _context.ApartadosCursos
@@ -153,7 +162,8 @@ namespace PlataformaELearning.Controllers
             return View(apartado);
         }
 
-        // Crear nueva tarea (GET)
+        // Crear nueva tarea (GET) (solo Admin/Maestro)
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> CreateTarea(int apartadoId)
         {
             var apartado = await _context.ApartadosCursos
@@ -166,9 +176,10 @@ namespace PlataformaELearning.Controllers
             return View(new TareaApartado { ApartadoId = apartadoId });
         }
 
-        // Crear nueva tarea (POST)
+        // Crear nueva tarea (POST) (solo Admin/Maestro)
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> CreateTarea(TareaApartado tarea)
         {
             if (ModelState.IsValid)
@@ -184,7 +195,8 @@ namespace PlataformaELearning.Controllers
             return View(tarea);
         }
 
-        // Ver detalles de una tarea
+        // Ver detalles de una tarea (solo Admin/Maestro)
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> DetallesTarea(int id)
         {
             var tarea = await _context.TareasApartados
@@ -201,7 +213,8 @@ namespace PlataformaELearning.Controllers
             return View(tarea);
         }
 
-        // Editar tarea (GET)
+        // Editar tarea (GET) (solo Admin/Maestro)
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> EditTarea(int id)
         {
             var tarea = await _context.TareasApartados
@@ -213,9 +226,10 @@ namespace PlataformaELearning.Controllers
             return View(tarea);
         }
 
-        // Editar tarea (POST)
+        // Editar tarea (POST) (solo Admin/Maestro)
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> EditTarea(int id, TareaApartado tarea)
         {
             if (id != tarea.Id) return NotFound();
@@ -240,7 +254,8 @@ namespace PlataformaELearning.Controllers
             return View(tarea);
         }
 
-        // Eliminar tarea (GET)
+        // Eliminar tarea (GET) (solo Admin/Maestro)
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> DeleteTarea(int id)
         {
             var tarea = await _context.TareasApartados
@@ -253,9 +268,10 @@ namespace PlataformaELearning.Controllers
             return View(tarea);
         }
 
-        // Eliminar tarea (POST)
+        // Eliminar tarea (POST) (solo Admin/Maestro)
         [HttpPost, ActionName("DeleteTarea")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> DeleteTareaConfirmed(int id)
         {
             var tarea = await _context.TareasApartados.FindAsync(id);
@@ -270,7 +286,8 @@ namespace PlataformaELearning.Controllers
 
         // ==================== MATERIALES ====================
 
-        // Agregar material a tarea (GET)
+        // Agregar material a tarea (GET) (solo Admin/Maestro)
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> AgregarMaterial(int tareaId)
         {
             var tarea = await _context.TareasApartados
@@ -284,10 +301,11 @@ namespace PlataformaELearning.Controllers
             return View(new MaterialTarea { TareaId = tareaId });
         }
 
-        // Agregar material a tarea (POST)
+        // Agregar material a tarea (POST) (solo Admin/Maestro)
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(104857600)] // 100MB para PDFs
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> AgregarMaterial(MaterialTarea material, IFormFile? archivoPDF)
         {
             if (ModelState.IsValid)
@@ -332,24 +350,47 @@ namespace PlataformaELearning.Controllers
             return View(material);
         }
 
-        // Descargar material PDF
+        // ========== MÉTODO PARA ALUMNOS (Pueden descargar si están inscritos) ==========
+        // Descargar material PDF - ACCESIBLE PARA ALUMNOS INSCRITOS
         [HttpGet]
+        [Authorize(Roles = "Administrador,Maestro,Alumno")] // ← Permite Alumnos
         public async Task<IActionResult> DescargarMaterial(int id)
         {
             var material = await _context.MaterialesTarea
                 .Where(m => m.Id == id && m.Tipo == TipoMaterial.PDF)
-                .Select(m => new { m.ArchivoFisico, m.ContentType, m.NombreArchivo, m.Titulo })
+                .Select(m => new { m.ArchivoFisico, m.ContentType, m.NombreArchivo, m.TareaId })
                 .FirstOrDefaultAsync();
 
             if (material?.ArchivoFisico == null) return NotFound();
 
+            // Si es alumno, verificar que está inscrito en el curso
+            if (User.IsInRole("Alumno"))
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null)
+                {
+                    int alumnoId = int.Parse(userIdClaim);
+                    bool inscrito = await AlumnoEstaInscritoEnCursoDeTarea(material.TareaId, alumnoId);
+
+                    if (!inscrito)
+                    {
+                        return Forbid();
+                    }
+                }
+                else
+                {
+                    return Forbid();
+                }
+            }
+
             return File(material.ArchivoFisico, material.ContentType ?? "application/pdf",
-                material.NombreArchivo ?? $"material_{id}.pdf");
+                        material.NombreArchivo ?? $"material_{id}.pdf");
         }
 
-        // Eliminar material
+        // Eliminar material (solo Admin/Maestro)
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Maestro")]
         public async Task<IActionResult> EliminarMaterial(int id)
         {
             var material = await _context.MaterialesTarea.FindAsync(id);
@@ -360,6 +401,21 @@ namespace PlataformaELearning.Controllers
                 TempData["SuccessMessage"] = "Material eliminado correctamente.";
             }
             return RedirectToAction(nameof(DetallesTarea), new { id = material?.TareaId });
+        }
+
+        // ========== MÉTODO AUXILIAR ==========
+        // Método auxiliar para verificar si un alumno está inscrito en el curso de una tarea
+        private async Task<bool> AlumnoEstaInscritoEnCursoDeTarea(int tareaId, int alumnoId)
+        {
+            var tarea = await _context.TareasApartados
+                .Include(t => t.Apartado)
+                .ThenInclude(a => a!.Curso)
+                .FirstOrDefaultAsync(t => t.Id == tareaId);
+
+            if (tarea?.Apartado?.Curso == null) return false;
+
+            return await _context.Inscripciones
+                .AnyAsync(i => i.AlumnoId == alumnoId && i.CursoId == tarea.Apartado.CursoId);
         }
     }
 }

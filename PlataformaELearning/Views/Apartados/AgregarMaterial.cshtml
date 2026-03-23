@@ -1,0 +1,278 @@
+﻿@model PlataformaELearning.Models.MaterialTarea
+
+@{
+    ViewData["Title"] = "Agregar Material";
+    var tarea = ViewBag.Tarea as PlataformaELearning.Models.TareaApartado;
+}
+
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-6 text-sm" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a asp-controller="Apartados" asp-action="Tareas" asp-route-apartadoId="@tarea?.ApartadoId" class="text-gray-600 hover:text-university-600 inline-flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Volver a Tareas
+                </a>
+            </li>
+            <li aria-current="page">
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
+                    <span class="text-university-600 font-medium">Agregar Material</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Agregar Material</h1>
+        <p class="text-gray-600 mt-2">Tarea: <span class="font-medium text-university-600">@tarea?.Titulo</span></p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
+            <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <i class="fas fa-paperclip text-university-600"></i>
+                Detalles del material
+            </h2>
+        </div>
+
+        <div class="p-6">
+            <form asp-action="AgregarMaterial" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm bg-red-50 p-4 rounded-lg mb-6 border border-red-200" role="alert"></div>
+
+                <input type="hidden" asp-for="TareaId" />
+
+                <div class="space-y-6">
+                    <!-- Título -->
+                    <div class="space-y-2">
+                        <label asp-for="Titulo" class="block text-sm font-medium text-gray-700">
+                            Título del material <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-heading text-gray-400"></i>
+                            </div>
+                            <input asp-for="Titulo" class="pl-10 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-university-500 focus:border-university-500" placeholder="Ej: Guía de ejercicios, Video explicativo..." />
+                        </div>
+                        <span asp-validation-for="Titulo" class="text-red-600 text-sm"></span>
+                    </div>
+
+                    <!-- Tipo de Material -->
+                    <div class="space-y-2">
+                        <label asp-for="Tipo" class="block text-sm font-medium text-gray-700">
+                            Tipo de material <span class="text-red-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <label class="relative cursor-pointer">
+                                <input type="radio" asp-for="Tipo" value="0" class="sr-only peer" id="tipoTexto">
+                                <div class="p-4 border-2 border-gray-200 rounded-xl text-center hover:border-university-300 peer-checked:border-university-600 peer-checked:bg-university-50 transition-all">
+                                    <i class="fas fa-file-alt text-2xl text-blue-500 mb-2"></i>
+                                    <span class="block text-sm font-medium text-gray-700">Texto</span>
+                                </div>
+                            </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" asp-for="Tipo" value="1" class="sr-only peer" id="tipoArchivo">
+                                <div class="p-4 border-2 border-gray-200 rounded-xl text-center hover:border-university-300 peer-checked:border-university-600 peer-checked:bg-university-50 transition-all">
+                                    <i class="fas fa-file-upload text-2xl text-red-500 mb-2"></i>
+                                    <span class="block text-sm font-medium text-gray-700">Archivo</span>
+                                </div>
+                            </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" asp-for="Tipo" value="2" class="sr-only peer" id="tipoVideo">
+                                <div class="p-4 border-2 border-gray-200 rounded-xl text-center hover:border-university-300 peer-checked:border-university-600 peer-checked:bg-university-50 transition-all">
+                                    <i class="fas fa-video text-2xl text-green-500 mb-2"></i>
+                                    <span class="block text-sm font-medium text-gray-700">Video</span>
+                                </div>
+                            </label>
+                        </div>
+                        <span asp-validation-for="Tipo" class="text-red-600 text-sm"></span>
+                    </div>
+
+                    <!-- Contenedor para Texto -->
+                    <div id="contenidoTextoDiv" class="hidden space-y-2 bg-blue-50 p-6 rounded-xl border border-blue-200">
+                        <label asp-for="ContenidoTexto" class="block text-sm font-medium text-blue-800">
+                            <i class="fas fa-pencil-alt mr-2"></i>Contenido
+                        </label>
+                        <textarea asp-for="ContenidoTexto" rows="8" class="block w-full border-blue-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Escribe el contenido aquí..."></textarea>
+                        <p class="text-xs text-blue-600">
+                            <i class="fas fa-info-circle"></i> El texto se mostrará como material de lectura
+                        </p>
+                    </div>
+
+                    <!-- Contenedor para Archivo (MEJORADO - acepta múltiples formatos) -->
+                    <div id="archivoDiv" class="hidden space-y-2 bg-red-50 p-6 rounded-xl border border-red-200">
+                        <label class="block text-sm font-medium text-red-800">
+                            <i class="fas fa-file-upload mr-2"></i>Subir Archivo
+                        </label>
+
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-red-300 border-dashed rounded-lg hover:border-red-400 transition bg-white/50">
+                            <div class="space-y-2 text-center">
+                                <i class="fas fa-cloud-upload-alt text-5xl text-red-400"></i>
+                                <div class="flex text-sm text-gray-600 justify-center">
+                                    <label for="archivoPDF" class="relative cursor-pointer bg-red-50 hover:bg-red-100 rounded-md font-medium text-red-600 hover:text-red-700 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-red-500 px-4 py-2 transition">
+                                        <span>Seleccionar archivo</span>
+                                        <input id="archivoPDF" name="archivoPDF" type="file" class="sr-only" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.zip,.rar">
+                                    </label>
+                                </div>
+                                <p class="text-xs text-gray-500">
+                                    o arrastra y suelta aquí
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    Formatos permitidos: PDF, Word, Excel, PowerPoint, Imágenes, ZIP
+                                </p>
+                                <p class="text-xs text-red-500 font-medium">
+                                    Máximo 100MB
+                                </p>
+                                <div id="fileInfoDisplay" class="mt-3 p-3 bg-white rounded-lg border border-red-200 hidden">
+                                    <div class="flex items-center gap-3">
+                                        <i id="fileIcon" class="fas fa-file text-red-500 text-xl"></i>
+                                        <div class="flex-1 text-left">
+                                            <p id="fileNameDisplay" class="text-sm font-medium text-gray-700 truncate"></p>
+                                            <p id="fileSizeDisplay" class="text-xs text-gray-500"></p>
+                                        </div>
+                                        <button type="button" id="clearFileBtn" class="text-gray-400 hover:text-red-500 transition">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-2 grid grid-cols-4 gap-2 text-center text-xs text-gray-500">
+                            <div class="p-2"><i class="fas fa-file-pdf text-red-500 block mb-1 text-lg"></i>PDF</div>
+                            <div class="p-2"><i class="fas fa-file-word text-blue-500 block mb-1 text-lg"></i>Word</div>
+                            <div class="p-2"><i class="fas fa-file-excel text-green-500 block mb-1 text-lg"></i>Excel</div>
+                            <div class="p-2"><i class="fas fa-file-powerpoint text-orange-500 block mb-1 text-lg"></i>PowerPoint</div>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor para Video -->
+                    <div id="urlVideoDiv" class="hidden space-y-2 bg-green-50 p-6 rounded-xl border border-green-200">
+                        <label asp-for="UrlVideo" class="block text-sm font-medium text-green-800">
+                            <i class="fab fa-youtube mr-2"></i>URL del Video
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fab fa-youtube text-green-500"></i>
+                            </div>
+                            <input asp-for="UrlVideo" class="pl-10 block w-full border-green-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500" placeholder="https://www.youtube.com/embed/VIDEO_ID" />
+                        </div>
+                        <span asp-validation-for="UrlVideo" class="text-red-600 text-sm"></span>
+                        <p class="text-xs text-green-600">
+                            <i class="fas fa-info-circle"></i> Usa el formato embed de YouTube: https://www.youtube.com/embed/VIDEO_ID
+                        </p>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="flex items-center gap-3 pt-4 border-t border-gray-200">
+                        <button type="submit" class="bg-university-600 hover:bg-university-700 text-white font-medium py-3 px-8 rounded-lg transition transform hover:scale-105 shadow-lg shadow-university-200 flex items-center gap-2">
+                            <i class="fas fa-save"></i>
+                            Guardar Material
+                        </button>
+                        <a asp-action="DetallesTarea" asp-route-id="@Model.TareaId" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-lg transition flex items-center gap-2">
+                            <i class="fas fa-times"></i>
+                            Cancelar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tips de ayuda -->
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+            <i class="fas fa-lightbulb text-blue-600 mt-1"></i>
+            <div>
+                <h4 class="text-sm font-medium text-blue-800">¿Qué tipo de material agregar?</h4>
+                <ul class="text-xs text-blue-700 mt-1 space-y-1">
+                    <li>• <strong>Texto:</strong> Para instrucciones, guías rápidas o contenido escrito directamente</li>
+                    <li>• <strong>Archivo:</strong> Para compartir documentos, presentaciones, hojas de cálculo o imágenes</li>
+                    <li>• <strong>Video:</strong> Para enlaces de YouTube con contenido explicativo</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // Manejar cambio de tipo de material
+            $('input[name="Tipo"]').change(function() {
+                var tipo = $(this).val();
+
+                // Ocultar todos con animación
+                $('#contenidoTextoDiv, #archivoDiv, #urlVideoDiv').fadeOut(200);
+
+                // Mostrar según selección
+                if (tipo == '0') { // Texto
+                    $('#contenidoTextoDiv').fadeIn(300);
+                } else if (tipo == '1') { // Archivo
+                    $('#archivoDiv').fadeIn(300);
+                } else if (tipo == '2') { // Video
+                    $('#urlVideoDiv').fadeIn(300);
+                }
+            });
+
+            // Mostrar información del archivo seleccionado
+            $('#archivoPDF').change(function() {
+                var file = this.files[0];
+                if (file) {
+                    var fileName = file.name;
+                    var fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                    var fileExtension = fileName.split('.').pop().toLowerCase();
+
+                    // Cambiar ícono según tipo de archivo
+                    var iconClass = 'fas fa-file';
+                    var iconColor = 'text-gray-500';
+                    if (fileExtension === 'pdf') {
+                        iconClass = 'fas fa-file-pdf';
+                        iconColor = 'text-red-500';
+                    } else if (['doc', 'docx'].includes(fileExtension)) {
+                        iconClass = 'fas fa-file-word';
+                        iconColor = 'text-blue-500';
+                    } else if (['xls', 'xlsx'].includes(fileExtension)) {
+                        iconClass = 'fas fa-file-excel';
+                        iconColor = 'text-green-500';
+                    } else if (['ppt', 'pptx'].includes(fileExtension)) {
+                        iconClass = 'fas fa-file-powerpoint';
+                        iconColor = 'text-orange-500';
+                    } else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension)) {
+                        iconClass = 'fas fa-file-image';
+                        iconColor = 'text-purple-500';
+                    } else if (['zip', 'rar', '7z'].includes(fileExtension)) {
+                        iconClass = 'fas fa-file-archive';
+                        iconColor = 'text-gray-600';
+                    }
+
+                    $('#fileIcon').removeClass().addClass(iconClass + ' ' + iconColor + ' text-xl');
+                    $('#fileNameDisplay').text(fileName);
+                    $('#fileSizeDisplay').text(fileSize);
+                    $('#fileInfoDisplay').removeClass('hidden');
+                } else {
+                    $('#fileInfoDisplay').addClass('hidden');
+                }
+            });
+
+            // Limpiar archivo seleccionado
+            $('#clearFileBtn').click(function() {
+                $('#archivoPDF').val('');
+                $('#fileInfoDisplay').addClass('hidden');
+            });
+
+            // Si ya hay un tipo seleccionado (por validación fallida), mostrarlo
+            var tipoSeleccionado = $('input[name="Tipo"]:checked').val();
+            if (tipoSeleccionado) {
+                if (tipoSeleccionado == '0') $('#contenidoTextoDiv').show();
+                else if (tipoSeleccionado == '1') $('#archivoDiv').show();
+                else if (tipoSeleccionado == '2') $('#urlVideoDiv').show();
+            }
+        });
+    </script>
+}

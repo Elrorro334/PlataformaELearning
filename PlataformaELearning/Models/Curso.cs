@@ -24,8 +24,11 @@ namespace PlataformaELearning.Models
         [ForeignKey("MaestroId")]
         public User? Maestro { get; set; }
 
-        // Propiedad de navegación para los contenidos del curso
+        // Propiedad de navegación para los contenidos del curso (de Beto)
         public ICollection<ContenidoCurso>? Contenidos { get; set; }
+
+        // ========== NUEVO: Apartados del curso (agregado sin modificar lo existente) ==========
+        public ICollection<ApartadoCurso>? Apartados { get; set; }
     }
 
     public class ContenidoCurso
@@ -59,7 +62,7 @@ namespace PlataformaELearning.Models
         [Display(Name = "Fecha de Publicación")]
         public DateTime FechaPublicacion { get; set; } = DateTime.Now;
 
-        
+
 
         [ForeignKey("CursoId")]
         public Curso? Curso { get; set; }

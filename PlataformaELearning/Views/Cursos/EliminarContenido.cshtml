@@ -1,0 +1,111 @@
+﻿@model PlataformaELearning.Models.ContenidoCurso
+
+@{
+    ViewData["Title"] = "Eliminar Contenido";
+}
+
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <!-- Icono de advertencia -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-4xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">¿Eliminar Contenido?</h1>
+            <p class="text-gray-600">Esta acción no se puede deshacer. El contenido será eliminado permanentemente.</p>
+        </div>
+
+        <!-- Detalles del contenido a eliminar -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <h3 class="font-medium text-gray-900 mb-4">Contenido a eliminar:</h3>
+
+            <dl class="space-y-3">
+                <div class="flex">
+                    <dt class="w-24 text-sm text-gray-500">Título:</dt>
+                    <dd class="text-sm text-gray-900 font-medium">@Model.Titulo</dd>
+                </div>
+
+                <div class="flex">
+                    <dt class="w-24 text-sm text-gray-500">Tipo:</dt>
+                    <dd class="text-sm">
+                        @if (Model.Tipo == TipoContenido.Anuncio)
+                        {
+                            <span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs">Anuncio</span>
+                        }
+                        else if (Model.Tipo == TipoContenido.PDF)
+                        {
+                            <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">PDF</span>
+                        }
+                        else if (Model.Tipo == TipoContenido.Video)
+                        {
+                            <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">Video</span>
+                        }
+                    </dd>
+                </div>
+
+                <div class="flex">
+                    <dt class="w-24 text-sm text-gray-500">Fecha:</dt>
+                    <dd class="text-sm text-gray-900">@Model.FechaPublicacion.ToString("dd/MM/yyyy HH:mm")</dd>
+                </div>
+
+                @if (Model.Tipo == TipoContenido.Anuncio && !string.IsNullOrEmpty(Model.ContenidoTexto))
+                {
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <dt class="text-sm text-gray-500 mb-2">Contenido del anuncio:</dt>
+                        <dd class="text-sm text-gray-700 bg-white p-3 rounded border border-gray-200">@Model.ContenidoTexto</dd>
+                    </div>
+                }
+
+                @if (Model.Tipo == TipoContenido.PDF && !string.IsNullOrEmpty(Model.NombreArchivo))
+                {
+                    <div class="flex">
+                        <dt class="w-24 text-sm text-gray-500">Archivo:</dt>
+                        <dd class="text-sm text-gray-900">@Model.NombreArchivo</dd>
+                    </div>
+                }
+
+                @if (Model.Tipo == TipoContenido.Video && !string.IsNullOrEmpty(Model.UrlVideo))
+                {
+                    <div class="flex">
+                        <dt class="w-24 text-sm text-gray-500">URL:</dt>
+                        <dd class="text-sm text-gray-900 truncate max-w-xs">@Model.UrlVideo</dd>
+                    </div>
+                }
+            </dl>
+        </div>
+
+        <!-- Formulario de confirmación -->
+        <form asp-action="EliminarContenido" method="post">
+            <input type="hidden" asp-for="Id" />
+
+            <div class="flex items-center justify-center gap-3">
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-6 rounded-lg transition flex items-center gap-2">
+                    <i class="fas fa-trash"></i>
+                    Sí, Eliminar Contenido
+                </button>
+
+                <a asp-action="Details" asp-route-id="@Model.CursoId" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-6 rounded-lg transition flex items-center gap-2">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tarjeta de información adicional -->
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+            <i class="fas fa-info-circle text-blue-600 mt-1"></i>
+            <div>
+                <h4 class="text-sm font-medium text-blue-800">Información importante</h4>
+                <p class="text-xs text-blue-700 mt-1">
+                    Al eliminar este contenido, desaparecerá para todos los estudiantes del curso.
+                    @if (Model.Tipo == TipoContenido.PDF)
+                    {
+                        <span> El archivo PDF también será eliminado permanentemente.</span>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

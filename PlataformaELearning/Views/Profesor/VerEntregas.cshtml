@@ -1,0 +1,73 @@
+﻿@model IEnumerable<PlataformaELearning.Models.EntregaTarea>
+
+@{
+    ViewData["Title"] = "Entregas de Tarea";
+    var tarea = ViewBag.Tarea as PlataformaELearning.Models.TareaApartado;
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a asp-action="TareasPendientes" class="text-university-600 hover:underline flex items-center gap-1 mb-4">
+            <i class="fas fa-arrow-left"></i> Volver a pendientes
+        </a>
+        <h1 class="text-3xl font-bold text-gray-900">@tarea?.Titulo</h1>
+        <p class="text-gray-600">@tarea?.Apartado?.Curso?.Nombre - @tarea?.Apartado?.Titulo</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        @if (Model.Any())
+        {
+            <div class="space-y-4">
+                @foreach (var entrega in Model)
+                {
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 bg-university-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-university-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-gray-900">@entrega.Alumno?.FirstName @entrega.Alumno?.LastName</h3>
+                                    <p class="text-sm text-gray-500">Entregado: @entrega.FechaEntrega.ToString("dd/MM/yyyy HH:mm")</p>
+                                    @if (!string.IsNullOrEmpty(entrega.ComentarioAlumno))
+                                    {
+                                        <p class="mt-2 text-gray-700 bg-gray-50 p-2 rounded">💬 @entrega.ComentarioAlumno</p>
+                                    }
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                @if (entrega.ArchivoEntregado != null)
+                                {
+                                    <a asp-action="DescargarEntrega" asp-route-id="@entrega.Id"
+                                       class="text-university-600 hover:text-university-700 p-2 hover:bg-university-50 rounded-lg"
+                                       target="_blank">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                }
+                                <a asp-action="CalificarEntrega" asp-route-entregaId="@entrega.Id"
+                                   class="bg-university-600 hover:bg-university-700 text-white px-4 py-2 rounded-lg">
+                                    @(entrega.Calificacion != null ? "Editar calificación" : "Calificar")
+                                </a>
+                            </div>
+                        </div>
+
+                        @if (entrega.Calificacion != null)
+                        {
+                            <div class="mt-3 pt-3 border-t border-gray-100">
+                                <span class="text-sm font-medium text-gray-700">Calificación: @entrega.Calificacion.Puntuacion/10</span>
+                                @if (!string.IsNullOrEmpty(entrega.Calificacion.Comentarios))
+                                {
+                                    <p class="text-sm text-gray-600 mt-1">📝 @entrega.Calificacion.Comentarios</p>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-center text-gray-500 py-8">No hay entregas para esta tarea</p>
+        }
+    </div>
+</div>

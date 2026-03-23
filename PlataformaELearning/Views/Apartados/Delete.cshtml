@@ -1,0 +1,56 @@
+﻿@model PlataformaELearning.Models.ApartadoCurso
+
+@{
+    ViewData["Title"] = "Eliminar Apartado";
+}
+
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <!-- Icono de advertencia -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-4xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">¿Eliminar Apartado?</h1>
+            <p class="text-gray-600">Esta acción eliminará el apartado y <strong>TODAS sus tareas</strong>. Esta acción no se puede deshacer.</p>
+        </div>
+
+        <!-- Detalles del apartado -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <h3 class="font-medium text-gray-900 mb-3">Apartado a eliminar:</h3>
+            <dl class="space-y-2">
+                <div class="flex">
+                    <dt class="w-24 text-sm text-gray-500">Título:</dt>
+                    <dd class="text-sm text-gray-900">@Model.Titulo</dd>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Descripcion))
+                {
+                    <div class="flex">
+                        <dt class="w-24 text-sm text-gray-500">Descripción:</dt>
+                        <dd class="text-sm text-gray-900">@Model.Descripcion</dd>
+                    </div>
+                }
+                <div class="flex">
+                    <dt class="w-24 text-sm text-gray-500">Tareas:</dt>
+                    <dd class="text-sm text-gray-900">@(Model.Tareas?.Count() ?? 0) tareas</dd>
+                </div>
+            </dl>
+        </div>
+
+        <!-- Formulario de confirmación -->
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CursoId" />
+            <div class="flex items-center justify-center gap-3">
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-6 rounded-lg transition flex items-center gap-2">
+                    <i class="fas fa-trash"></i>
+                    Sí, Eliminar Apartado
+                </button>
+                <a asp-action="Index" asp-route-cursoId="@Model.CursoId" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-6 rounded-lg transition flex items-center gap-2">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

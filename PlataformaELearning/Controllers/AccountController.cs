@@ -319,5 +319,14 @@ namespace PlataformaELearning.Controllers
 
             await smtp.SendMailAsync(mail);
         }
+
+        // ========== MÉTODO AGREGADO PARA ACCESO DENEGADO ==========
+        // GET: /Account/AccessDenied
+        [HttpGet]
+        public IActionResult AccessDenied(string? returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
     }
 }

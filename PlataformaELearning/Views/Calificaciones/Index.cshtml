@@ -1,0 +1,370 @@
+﻿@model IEnumerable<PlataformaELearning.Models.Calificacion>
+
+@{
+    ViewData["Title"] = "Mis Calificaciones";
+    var entregasCalificadas = ViewBag.EntregasCalificadas as List<PlataformaELearning.Models.EntregaTarea>;
+    var tareasTotales = ViewBag.TareasTotales as List<PlataformaELearning.Models.TareaApartado>;
+
+    // ========== CALIFICACIONES POR CURSO (calificaciones generales del curso) ==========
+    var calificacionesPorCurso = Model.Where(c => c.TareaId == null).ToList();
+
+    // ========== CALIFICACIONES POR TAREA (calificaciones específicas de tareas) ==========
+    var calificacionesPorTarea = entregasCalificadas ?? new List<PlataformaELearning.Models.EntregaTarea>();
+
+    // ========== CREAR DICCIONARIO DE PUNTUACIONES POR TAREA ==========
+    var puntuacionPorTarea = new Dictionary<int, decimal>();
+    foreach (var entrega in calificacionesPorTarea)
+    {
+        if (entrega.Calificacion != null)
+        {
+            puntuacionPorTarea[entrega.TareaId] = entrega.Calificacion.Puntuacion;
+        }
+    }
+
+    // ========== PROMEDIO GENERAL (TODAS las tareas del curso) ==========
+    var todasLasPuntuaciones = new List<decimal>();
+    var tareasPorCurso = new Dictionary<string, List<(decimal? puntuacion, string tareaTitulo, DateTime fechaLimite, bool entregada, bool vencida, int tareaId)>>();
+    var tareasNoEntregadas = 0;
+    var tareasVencidasNoEntregadas = 0;
+
+    if (tareasTotales != null)
+    {
+        foreach (var tarea in tareasTotales)
+        {
+            string cursoNombre = tarea.Apartado?.Curso?.Nombre ?? "Curso sin nombre";
+            bool entregada = puntuacionPorTarea.ContainsKey(tarea.Id);
+            bool vencida = tarea.FechaLimite < DateTime.Now;
+            decimal? puntuacion = entregada ? puntuacionPorTarea[tarea.Id] : (decimal?)null;
+
+            // Contar tareas no entregadas
+            if (!entregada)
+            {
+                tareasNoEntregadas++;
+                if (vencida) tareasVencidasNoEntregadas++;
+            }
+
+            // Agregar al diccionario por curso
+            if (!tareasPorCurso.ContainsKey(cursoNombre))
+                tareasPorCurso[cursoNombre] = new List<(decimal?, string, DateTime, bool, bool, int)>();
+            tareasPorCurso[cursoNombre].Add((puntuacion, tarea.Titulo, tarea.FechaLimite, entregada, vencida, tarea.Id));
+
+            // Para promedio general: si no entregó, se considera 0
+            todasLasPuntuaciones.Add(entregada ? puntuacion.Value : 0);
+        }
+    }
+
+    var promedioGeneral = todasLasPuntuaciones.Any() ? todasLasPuntuaciones.Average() : 0;
+
+    // Calcular promedios por curso (considerando todas las tareas)
+    var promedioPorCurso = new Dictionary<string, decimal>();
+    var detallePorCurso = new Dictionary<string, (int total, int entregadas, int pendientes, int vencidas, decimal promedio)>();
+
+    foreach (var curso in tareasPorCurso)
+    {
+        int totalTareas = curso.Value.Count;
+        int entregadas = curso.Value.Count(t => t.entregada);
+        int pendientes = curso.Value.Count(t => !t.entregada && !t.vencida);
+        int vencidas = curso.Value.Count(t => !t.entregada && t.vencida);
+        decimal sumaPuntuaciones = curso.Value.Sum(t => t.puntuacion ?? 0);
+        decimal promedioCurso = totalTareas > 0 ? sumaPuntuaciones / totalTareas : 0;
+
+        promedioPorCurso[curso.Key] = promedioCurso;
+        detallePorCurso[curso.Key] = (totalTareas, entregadas, pendientes, vencidas, promedioCurso);
+    }
+
+    // Determinar color y mensaje según promedio
+    string promedioColor = promedioGeneral >= 8 ? "text-green-600" : (promedioGeneral >= 6 ? "text-amber-600" : "text-red-600");
+    string promedioIcono = promedioGeneral >= 8 ? "fa-star" : (promedioGeneral >= 6 ? "fa-chart-line" : "fa-exclamation-triangle");
+    string promedioMensaje = promedioGeneral >= 9 ? "¡Excelente! Sigue así." :
+                              promedioGeneral >= 7 ? "¡Buen trabajo! Puedes mejorar." :
+                              promedioGeneral >= 6 ? "Aprobado, pero puedes mejorar." :
+                              promedioGeneral > 0 ? "Necesitas mejorar tus calificaciones." :
+                              "Aún no tienes calificaciones.";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header con Promedio General -->
+    <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Mis Calificaciones</h1>
+                <p class="text-gray-600 mt-2">Revisa tus notas de tareas y comentarios de los profesores</p>
+                @if (tareasTotales != null)
+                {
+                    <p class="text-sm text-gray-500 mt-1">
+                        <i class="fas fa-info-circle"></i>
+                        El promedio considera TODAS las tareas del curso. Las tareas no entregadas cuentan como 0.
+                    </p>
+                }
+            </div>
+
+            <!-- Tarjeta de Promedio General -->
+            @if (todasLasPuntuaciones.Any())
+            {
+                <div class="bg-gradient-to-r from-university-600 to-university-700 rounded-xl shadow-lg p-4 min-w-[220px]">
+                    <div class="text-center">
+                        <p class="text-white/80 text-sm uppercase tracking-wide">Promedio General</p>
+                        <div class="flex items-center justify-center gap-2 mt-1">
+                            <i class="fas @promedioIcono text-white text-2xl"></i>
+                            <span class="text-4xl font-bold text-white">@promedioGeneral.ToString("F2")</span>
+                            <span class="text-white/80">/10</span>
+                        </div>
+                        <p class="text-white/90 text-xs mt-1">@promedioMensaje</p>
+                        <p class="text-white/70 text-xs mt-1">Basado en @todasLasPuntuaciones.Count tarea(s) total(es)</p>
+                        @if (tareasNoEntregadas > 0)
+                        {
+                            <div class="mt-2 pt-2 border-t border-white/20">
+                                <p class="text-white/80 text-xs">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    @tareasNoEntregadas tarea(s) sin entregar
+                                    @if (tareasVencidasNoEntregadas > 0)
+                                    {
+                                        <span>(@tareasVencidasNoEntregadas vencidas)</span>
+                                    }
+                                </p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Resumen por Curso (TODAS las tareas) -->
+    @if (promedioPorCurso.Any())
+    {
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-chart-simple text-university-600"></i>
+                Resumen por Curso
+                <span class="text-sm font-normal text-gray-500">(Todas las tareas del curso)</span>
+            </h2>
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                @foreach (var curso in promedioPorCurso.OrderByDescending(c => c.Value))
+                {
+                    var detalle = detallePorCurso[curso.Key];
+                    var promedioCurso = detalle.promedio;
+                    var porcentajeEntregadas = detalle.total > 0 ? (detalle.entregadas * 100 / detalle.total) : 0;
+                    var colorCurso = promedioCurso >= 8 ? "border-green-200 bg-green-50" : (promedioCurso >= 6 ? "border-amber-200 bg-amber-50" : "border-red-200 bg-red-50");
+                    var textoCurso = promedioCurso >= 8 ? "text-green-700" : (promedioCurso >= 6 ? "text-amber-700" : "text-red-700");
+
+                    <div class="rounded-xl border @colorCurso p-4">
+                        <h3 class="font-semibold text-gray-800 truncate mb-2" title="@curso.Key">@curso.Key</h3>
+                        <div class="flex items-baseline justify-between">
+                            <span class="text-2xl font-bold @textoCurso">@promedioCurso.ToString("F2")</span>
+                            <span class="text-sm text-gray-500">/10</span>
+                        </div>
+                        <div class="mt-2 text-xs text-gray-600">
+                            <div class="flex justify-between">
+                                <span>✅ Entregadas:</span>
+                                <span class="font-medium text-green-600">@detalle.entregadas</span>
+                            </div>
+                            <div class="flex justify-between mt-1">
+                                <span>⏳ Pendientes:</span>
+                                <span class="font-medium text-amber-600">@detalle.pendientes</span>
+                            </div>
+                            <div class="flex justify-between mt-1">
+                                <span>⚠️ Vencidas sin entregar:</span>
+                                <span class="font-medium text-red-600">@detalle.vencidas</span>
+                            </div>
+                            <div class="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                                <div class="bg-university-600 h-1.5 rounded-full" style="width: @porcentajeEntregadas%"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">@detalle.entregadas de @detalle.total tareas entregadas</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (calificacionesPorTarea.Any() || calificacionesPorCurso.Any())
+    {
+        <!-- ========== DETALLE DE TAREAS POR CURSO ========== -->
+        @if (tareasPorCurso.Any())
+        {
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="fas fa-list-check text-university-600"></i>
+                    Detalle de Tareas por Curso
+                </h2>
+
+                @foreach (var curso in tareasPorCurso.OrderBy(c => c.Key))
+                {
+                    var detalleCurso = detallePorCurso[curso.Key];
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-lg font-bold text-gray-800">@curso.Key</h3>
+                            <div class="text-sm">
+                                <span class="text-green-600">✅ @detalleCurso.entregadas entregadas</span>
+                                <span class="text-gray-400 mx-1">|</span>
+                                <span class="text-amber-600">⏳ @detalleCurso.pendientes pendientes</span>
+                                @if (detalleCurso.vencidas > 0)
+                                {
+                                    <span class="text-red-600 ml-1">⚠️ @detalleCurso.vencidas vencidas</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                            @foreach (var tarea in curso.Value.OrderBy(t => t.fechaLimite))
+                            {
+                                var estado = tarea.entregada ? "Entregada" : (tarea.vencida ? "Vencida sin entregar" : "Pendiente");
+                                var colorEstado = tarea.entregada ? "bg-green-100 text-green-700" : (tarea.vencida ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700");
+                                var iconoEstado = tarea.entregada ? "fa-check-circle" : (tarea.vencida ? "fa-exclamation-triangle" : "fa-hourglass-half");
+
+                                <div class="bg-white rounded-lg border border-gray-100 p-3 hover:shadow-sm transition">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-800 text-sm">@tarea.tareaTitulo</p>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                <i class="far fa-calendar-alt mr-1"></i>
+                                                Límite: @tarea.fechaLimite.ToString("dd/MM/yyyy HH:mm")
+                                            </p>
+                                        </div>
+                                        <div class="text-right">
+                                            @if (tarea.puntuacion.HasValue)
+                                            {
+                                                <span class="text-lg font-bold text-university-600">@tarea.puntuacion.Value.ToString("F2")</span>
+                                                <span class="text-xs text-gray-500">/10</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-sm font-medium text-red-500">0 puntos</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 flex items-center justify-between">
+                                        <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full @colorEstado">
+                                            <i class="fas @iconoEstado"></i>
+                                            <span>@estado</span>
+                                        </span>
+                                        @if (!tarea.entregada && !tarea.vencida)
+                                        {
+                                            <a asp-controller="Tareas" asp-action="Detalle" asp-route-id="@tarea.tareaId"
+                                               class="text-xs text-university-600 hover:underline">
+                                                Entregar ahora
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- ========== CALIFICACIONES POR TAREA (SOLO LAS CALIFICADAS) ========== -->
+        @if (calificacionesPorTarea.Any())
+        {
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="fas fa-tasks text-university-600"></i>
+                    Calificaciones Detalladas
+                    <span class="text-sm font-normal text-gray-500">(@calificacionesPorTarea.Count tareas calificadas)</span>
+                </h2>
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    @foreach (var entrega in calificacionesPorTarea.OrderByDescending(e => e.FechaEntrega))
+                    {
+                        var puntuacion = entrega.Calificacion?.Puntuacion ?? 0;
+                        var colorTarea = puntuacion >= 8 ? "text-green-600" : (puntuacion >= 6 ? "text-amber-600" : "text-red-600");
+
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition">
+                            <div class="bg-gradient-to-r from-university-600 to-university-700 px-4 py-3">
+                                <h3 class="text-white font-semibold truncate">@entrega.Tarea?.Titulo</h3>
+                                <p class="text-university-100 text-xs mt-1">@entrega.Tarea?.Apartado?.Curso?.Nombre</p>
+                                @if (!string.IsNullOrEmpty(entrega.Tarea?.TipoTarea))
+                                {
+                                    <span class="inline-block mt-1 text-xs bg-white/20 rounded-full px-2 py-0.5">@entrega.Tarea.TipoTarea</span>
+                                }
+                            </div>
+                            <div class="p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-sm text-gray-500">Calificación</span>
+                                    <span class="text-2xl font-bold @colorTarea">@puntuacion.ToString("F2")</span>
+                                    <span class="text-sm text-gray-500">/10</span>
+                                </div>
+                                @if (!string.IsNullOrEmpty(entrega.Calificacion?.Comentarios))
+                                {
+                                    <div class="mt-3 p-3 bg-gray-50 rounded-lg">
+                                        <p class="text-xs text-gray-500 mb-1">Comentario del profesor:</p>
+                                        <p class="text-sm text-gray-700">@entrega.Calificacion.Comentarios</p>
+                                    </div>
+                                }
+                                <div class="mt-3 flex justify-between items-center text-xs text-gray-400">
+                                    <span>
+                                        <i class="far fa-calendar-alt mr-1"></i>
+                                        Entregado: @entrega.FechaEntrega.ToString("dd/MM/yyyy")
+                                    </span>
+                                    <span>
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Calificado: @entrega.Calificacion?.FechaCalificacion.ToString("dd/MM/yyyy")
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- ========== CALIFICACIONES GENERALES POR CURSO ========== -->
+        @if (calificacionesPorCurso.Any())
+        {
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="fas fa-chalkboard-teacher text-university-600"></i>
+                    Calificaciones Finales por Curso
+                </h2>
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    @foreach (var cal in calificacionesPorCurso.OrderByDescending(c => c.FechaCalificacion))
+                    {
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition">
+                            <div class="bg-gradient-to-r from-gray-800 to-gray-900 px-4 py-3">
+                                <h3 class="text-white font-semibold truncate">@cal.Curso?.Nombre</h3>
+                            </div>
+                            <div class="p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-sm text-gray-500">Calificación Final</span>
+                                    <span class="text-2xl font-bold text-university-600">@cal.Puntuacion.ToString("F2")</span>
+                                    <span class="text-sm text-gray-500">/10</span>
+                                </div>
+                                @if (!string.IsNullOrEmpty(cal.Comentarios))
+                                {
+                                    <div class="mt-3 p-3 bg-gray-50 rounded-lg">
+                                        <p class="text-xs text-gray-500 mb-1">Comentario del profesor:</p>
+                                        <p class="text-sm text-gray-700">@cal.Comentarios</p>
+                                    </div>
+                                }
+                                <div class="mt-3 text-right">
+                                    <span class="text-xs text-gray-400">
+                                        <i class="fas fa-calendar-check mr-1"></i>
+                                        Calificado: @cal.FechaCalificacion.ToString("dd/MM/yyyy")
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-chart-line text-4xl text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">No hay calificaciones aún</h3>
+            <p class="text-gray-500 mb-6 max-w-md mx-auto">
+                Aún no tienes calificaciones. Una vez que los profesores califiquen tus tareas, aparecerán aquí.
+            </p>
+            <a asp-controller="Inscripciones" asp-action="MisCursos"
+               class="inline-flex items-center gap-2 text-university-600 hover:text-university-700 font-medium">
+                <i class="fas fa-arrow-left"></i>
+                Ver mis cursos
+            </a>
+        </div>
+    }
+</div>

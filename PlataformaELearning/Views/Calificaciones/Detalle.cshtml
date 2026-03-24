@@ -1,0 +1,67 @@
+﻿@model PlataformaELearning.Models.Calificacion
+
+@{
+    ViewData["Title"] = "Detalle de Calificación";
+}
+
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <a asp-action="Index" class="text-university-600 hover:underline flex items-center gap-1 mb-6">
+        <i class="fas fa-arrow-left"></i> Volver a mis calificaciones
+    </a>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-university-600 to-university-700 px-6 py-4">
+            <h1 class="text-2xl font-bold text-white">Detalle de Calificación</h1>
+            <p class="text-university-100">@Model.Curso?.Nombre</p>
+        </div>
+
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <span class="text-sm text-gray-500 block">Calificación</span>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-5xl font-bold text-university-600">@Model.Puntuacion</span>
+                            <span class="text-gray-400">/ 10</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-sm text-gray-500 block">Fecha de calificación</span>
+                        <p class="font-medium">@Model.FechaCalificacion.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="text-sm text-gray-500 block">Comentarios del profesor</span>
+                    <div class="mt-2 p-4 bg-gray-50 rounded-lg">
+                        @if (!string.IsNullOrEmpty(Model.Comentarios))
+                        {
+                            <p class="text-gray-700 whitespace-pre-line">@Model.Comentarios</p>
+                        }
+                        else
+                        {
+                            <p class="text-gray-400 italic">Sin comentarios</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.Tarea != null)
+            {
+                <div class="mt-6 pt-4 border-t border-gray-100">
+                    <h3 class="font-semibold text-gray-900 mb-2">Tarea relacionada</h3>
+                    <p class="text-gray-700">@Model.Tarea.Titulo</p>
+                    @if (Model.Entrega != null && Model.Entrega.ArchivoEntregado != null)
+                    {
+                        <a asp-controller="Tareas" asp-action="DescargarArchivo" asp-route-id="@Model.Entrega.Id"
+                           class="inline-flex items-center gap-2 mt-2 text-university-600 hover:underline">
+                            <i class="fas fa-download"></i>
+                            Descargar mi entrega
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

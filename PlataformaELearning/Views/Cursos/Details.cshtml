@@ -27,18 +27,22 @@
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3 min-w-max">
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl font-bold transition-all backdrop-blur-md flex items-center justify-center gap-2">
-                    <i class="fas fa-pen"></i> Editar Info
-                </a>
-                <a asp-action="AgregarContenido" asp-route-cursoId="@Model.Id" class="px-6 py-3 bg-university-500 hover:bg-university-400 text-white rounded-xl font-bold transition-all shadow-lg shadow-university-500/30 flex items-center justify-center gap-2">
-                    <i class="fas fa-cloud-upload-alt"></i> Subir Material
-                </a>
+                @if (User.IsInRole("Administrador") || User.IsInRole("Maestro"))
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl font-bold transition-all backdrop-blur-md flex items-center justify-center gap-2">
+                        <i class="fas fa-pen"></i> Editar Info
+                    </a>
+                    <a asp-action="AgregarContenido" asp-route-cursoId="@Model.Id" class="px-6 py-3 bg-university-500 hover:bg-university-400 text-white rounded-xl font-bold transition-all shadow-lg shadow-university-500/30 flex items-center justify-center gap-2">
+                        <i class="fas fa-cloud-upload-alt"></i> Subir Material
+                    </a>
+                }
             </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
+    <!-- PRIMERA FILA: Material de Estudio y Docente -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <!-- Columna izquierda: Material de Estudio (2 columnas) -->
         <div class="lg:col-span-2 space-y-6">
             <div class="flex items-center justify-between mb-2">
                 <h2 class="text-2xl font-bold text-gray-900">Material de Estudio</h2>
@@ -74,15 +78,17 @@
                                     </div>
                                 </div>
 
-                                <a asp-action="EliminarContenido" asp-route-id="@contenido.Id"
-                                   class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition"
-                                   onclick="return confirm('¿Eliminar este material permanentemente?')" title="Eliminar material">
-                                    <i class="fas fa-trash-alt text-sm"></i>
-                                </a>
+                                @if (User.IsInRole("Administrador") || User.IsInRole("Maestro"))
+                                {
+                                    <a asp-action="EliminarContenido" asp-route-id="@contenido.Id"
+                                       class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition"
+                                       onclick="return confirm('¿Eliminar este material permanentemente?')" title="Eliminar material">
+                                        <i class="fas fa-trash-alt text-sm"></i>
+                                    </a>
+                                }
                             </div>
 
                             <div class="p-6">
-
                                 @if (contenido.Tipo == TipoContenido.Anuncio && !string.IsNullOrEmpty(contenido.ContenidoTexto))
                                 {
                                     <div class="prose max-w-none text-gray-700">
@@ -109,7 +115,6 @@
 
                                 @if (contenido.Tipo == TipoContenido.Video && !string.IsNullOrEmpty(contenido.UrlVideo))
                                 {
-                                    // Limpiador automático de URLs de YouTube para evitar bloqueos
                                     string embedUrl = contenido.UrlVideo;
                                     if (embedUrl.Contains("youtube.com/watch?v="))
                                     {
@@ -142,13 +147,17 @@
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 mb-2">Aula Vacía</h3>
                     <p class="text-gray-500 mb-6 max-w-sm mx-auto">Aún no hay anuncios, videos ni documentos para los estudiantes.</p>
-                    <a asp-action="AgregarContenido" asp-route-cursoId="@Model.Id" class="bg-university-50 text-university-700 px-6 py-2.5 rounded-xl font-bold hover:bg-university-100 transition inline-flex items-center gap-2">
-                        <i class="fas fa-plus"></i> Agregar Material
-                    </a>
+                    @if (User.IsInRole("Administrador") || User.IsInRole("Maestro"))
+                    {
+                        <a asp-action="AgregarContenido" asp-route-cursoId="@Model.Id" class="bg-university-50 text-university-700 px-6 py-2.5 rounded-xl font-bold hover:bg-university-100 transition inline-flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Agregar Material
+                        </a>
+                    }
                 </div>
             }
         </div>
 
+        <!-- Columna derecha: Docente (1 columna) -->
         <div class="lg:col-span-1">
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sticky top-24">
                 <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-6">Docente Titular</h3>
@@ -174,6 +183,161 @@
                 </div>
             </div>
         </div>
+    </div>
 
+    <!-- ========== SEGUNDA FILA: APARTADOS DEL CURSO ========== -->
+    <div class="mt-8">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Contenido del Curso por Apartados</h2>
+            @if (User.IsInRole("Administrador") || User.IsInRole("Maestro"))
+            {
+                <a asp-controller="Apartados" asp-action="Index" asp-route-cursoId="@Model.Id"
+                   class="bg-university-600 hover:bg-university-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition">
+                    <i class="fas fa-layer-group"></i>
+                    Gestionar Apartados
+                </a>
+            }
+        </div>
+
+        @if (Model.Apartados != null && Model.Apartados.Any())
+        {
+            <div class="space-y-6">
+                @foreach (var apartado in Model.Apartados.OrderBy(a => a.Orden))
+                {
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <!-- Cabecera del apartado -->
+                        <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-university-100 text-university-700 rounded-xl flex items-center justify-center font-bold text-lg">
+                                    @apartado.Orden
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900 text-lg">@apartado.Titulo</h3>
+                                    @if (!string.IsNullOrEmpty(apartado.Descripcion))
+                                    {
+                                        <p class="text-sm text-gray-600">@apartado.Descripcion</p>
+                                    }
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                                    @(apartado.Tareas?.Count() ?? 0) tareas
+                                </span>
+                                @if (User.IsInRole("Administrador") || User.IsInRole("Maestro"))
+                                {
+                                    <a asp-controller="Apartados" asp-action="Edit" asp-route-id="@apartado.Id"
+                                       class="text-amber-600 hover:text-amber-700 p-2 hover:bg-amber-50 rounded-lg transition" title="Editar apartado">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Lista de tareas del apartado -->
+                        @if (apartado.Tareas != null && apartado.Tareas.Any())
+                        {
+                            <div class="divide-y divide-gray-100">
+                                @foreach (var tarea in apartado.Tareas.OrderBy(t => t.FechaLimite))
+                                {
+                                    <div class="px-6 py-4 hover:bg-gray-50 transition flex items-center justify-between">
+                                        <div class="flex items-start gap-3">
+                                            <div class="mt-1">
+                                                @if (tarea.FechaLimite < DateTime.Now)
+                                                {
+                                                    <i class="fas fa-clock text-red-500"></i>
+                                                }
+                                                else if ((tarea.FechaLimite - DateTime.Now).TotalHours < 24)
+                                                {
+                                                    <i class="fas fa-exclamation-triangle text-amber-500"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="fas fa-check-circle text-green-500"></i>
+                                                }
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center gap-2">
+                                                    <a asp-controller="Apartados" asp-action="DetallesTarea" asp-route-id="@tarea.Id"
+                                                       class="font-medium text-gray-900 hover:text-university-600">
+                                                        @tarea.Titulo
+                                                    </a>
+                                                    @if (!string.IsNullOrEmpty(tarea.TipoTarea))
+                                                    {
+                                                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">@tarea.TipoTarea</span>
+                                                    }
+                                                </div>
+                                                <div class="text-sm text-gray-500 mt-1">
+                                                    <i class="far fa-calendar-alt mr-1"></i> Límite: @tarea.FechaLimite.ToString("dd/MM/yyyy HH:mm")
+                                                    @if (tarea.FechaLimite < DateTime.Now)
+                                                    {
+                                                        <span class="ml-2 text-red-500">(Vencida)</span>
+                                                    }
+                                                    else if ((tarea.FechaLimite - DateTime.Now).TotalHours < 24)
+                                                    {
+                                                        <span class="ml-2 text-amber-500">(Próxima a vencer)</span>
+                                                    }
+                                                </div>
+                                                @if (tarea.Materiales != null && tarea.Materiales.Any())
+                                                {
+                                                    <div class="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                                                        <i class="fas fa-paperclip"></i>
+                                                        <span>@tarea.Materiales.Count() materiales de apoyo</span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-4">
+                                            <span class="text-sm font-bold text-university-600">@tarea.PuntosTotales pts</span>
+                                            @if (User.IsInRole("Alumno"))
+                                            {
+                                                <a asp-controller="Tareas" asp-action="Detalle" asp-route-id="@tarea.Id"
+                                                   class="bg-university-600 hover:bg-university-700 text-white px-3 py-1.5 rounded-lg text-sm transition">
+                                                    Entregar
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="px-6 py-8 text-center text-gray-500">
+                                <i class="fas fa-tasks text-3xl mb-2 opacity-50"></i>
+                                <p class="text-sm">No hay tareas en este apartado</p>
+                                @if (User.IsInRole("Administrador") || User.IsInRole("Maestro"))
+                                {
+                                    <a asp-controller="Apartados" asp-action="CreateTarea" asp-route-apartadoId="@apartado.Id"
+                                       class="mt-2 inline-flex items-center gap-1 text-university-600 hover:text-university-700 text-sm">
+                                        <i class="fas fa-plus-circle"></i>
+                                        Crear tarea
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="bg-gray-50 rounded-2xl p-12 text-center border border-dashed border-gray-300">
+                <i class="fas fa-layer-group text-5xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Este curso no tiene apartados</h3>
+                <p class="text-gray-500 mb-6">Organiza tu contenido creando apartados (temas, unidades, módulos...)</p>
+                @if (User.IsInRole("Administrador") || User.IsInRole("Maestro"))
+                {
+                    <a asp-controller="Apartados" asp-action="Create" asp-route-cursoId="@Model.Id"
+                       class="bg-university-600 hover:bg-university-700 text-white px-6 py-3 rounded-lg inline-flex items-center gap-2 transition">
+                        <i class="fas fa-plus-circle"></i>
+                        Crear Primer Apartado
+                    </a>
+                }
+                else
+                {
+                    <p class="text-gray-400">El profesor aún no ha organizado el contenido del curso.</p>
+                }
+            </div>
+        }
     </div>
 </div>

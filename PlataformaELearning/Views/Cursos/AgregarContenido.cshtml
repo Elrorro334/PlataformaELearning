@@ -6,53 +6,203 @@
     string cursoNombre = ViewBag.CursoNombre;
 }
 
-<h1>Agregar Contenido al Curso: @cursoNombre</h1>
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb mejorado -->
+    <nav class="flex mb-6 text-sm" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a asp-controller="Cursos" asp-action="Index" class="text-gray-600 hover:text-university-600 inline-flex items-center">
+                    <i class="fas fa-home mr-2"></i>
+                    Cursos
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
+                    <a asp-controller="Cursos" asp-action="Details" asp-route-id="@cursoId" class="text-gray-600 hover:text-university-600">
+                        @cursoNombre
+                    </a>
+                </div>
+            </li>
+            <li aria-current="page">
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
+                    <span class="text-university-600 font-medium">Agregar Contenido</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
 
-<hr />
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="AgregarContenido" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="CursoId" value="@cursoId" />
-
-            <div class="form-group mb-3">
-                <label asp-for="Titulo" class="control-label"></label>
-                <input asp-for="Titulo" class="form-control" />
-                <span asp-validation-for="Titulo" class="text-danger"></span>
+    <!-- Header con diseño mejorado -->
+    <div class="bg-gradient-to-r from-university-600 to-university-700 rounded-xl shadow-lg p-8 mb-8 text-white">
+        <div class="flex items-center gap-4">
+            <div class="bg-white/20 p-4 rounded-2xl backdrop-blur-sm">
+                <i class="fas fa-plus-circle text-4xl"></i>
             </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Tipo" class="control-label"></label>
-                <select asp-for="Tipo" class="form-control" asp-items="ViewBag.Tipos" id="tipoContenido">
-                    <option value="">Seleccione tipo</option>
-                </select>
-                <span asp-validation-for="Tipo" class="text-danger"></span>
+            <div>
+                <h1 class="text-3xl font-bold mb-2">Agregar Nuevo Contenido</h1>
+                <p class="text-white/90">Comparte materiales educativos con tus estudiantes</p>
             </div>
+        </div>
+    </div>
 
-            <div class="form-group mb-3" id="contenidoTextoDiv" style="display:none;">
-                <label asp-for="ContenidoTexto" class="control-label">Contenido del Anuncio</label>
-                <textarea asp-for="ContenidoTexto" class="form-control" rows="5"></textarea>
-                <span asp-validation-for="ContenidoTexto" class="text-danger"></span>
+    <!-- Tarjeta de información del curso -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-university-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-book-open text-university-600 text-xl"></i>
             </div>
+            <div>
+                <p class="text-sm text-gray-500">Curso seleccionado</p>
+                <p class="text-lg font-semibold text-gray-900">@cursoNombre</p>
+            </div>
+        </div>
+    </div>
 
-            <div class="form-group mb-3" id="archivoPDFDiv" style="display:none;">
-                <label class="control-label">Archivo PDF</label>
-                <input type="file" name="archivoPDF" class="form-control" accept=".pdf" />
-                <small class="form-text text-muted">Seleccione un archivo PDF</small>
-            </div>
+    <!-- Formulario principal con diseño mejorado -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
+            <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <i class="fas fa-edit text-university-600"></i>
+                Detalles del contenido
+            </h2>
+        </div>
 
-            <div class="form-group mb-3" id="urlVideoDiv" style="display:none;">
-                <label asp-for="UrlVideo" class="control-label">URL del Video</label>
-                <input asp-for="UrlVideo" class="form-control" placeholder="https://www.youtube.com/embed/..." />
-                <span asp-validation-for="UrlVideo" class="text-danger"></span>
-                <small class="form-text text-muted">Ejemplo: https://www.youtube.com/embed/VIDEO_ID</small>
-            </div>
+        <div class="p-6">
+            <form asp-action="AgregarContenido" method="post" enctype="multipart/form-data" class="space-y-6">
+                <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm bg-red-50 p-4 rounded-lg border border-red-200" role="alert"></div>
 
-            <div class="form-group">
-                <input type="submit" value="Agregar" class="btn btn-primary" />
-                <a asp-action="Details" asp-route-id="@cursoId" class="btn btn-secondary">Cancelar</a>
-            </div>
-        </form>
+                <input type="hidden" asp-for="CursoId" value="@cursoId" />
+
+                <!-- Campo Título con mejor diseño -->
+                <div class="space-y-2">
+                    <label asp-for="Titulo" class="block text-sm font-medium text-gray-700">
+                        Título del contenido <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-heading text-gray-400"></i>
+                        </div>
+                        <input asp-for="Titulo" class="pl-10 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-university-500 focus:border-university-500 transition" placeholder="Ej: Video introductorio, Guía de ejercicios..." />
+                    </div>
+                    <span asp-validation-for="Titulo" class="text-red-600 text-sm"></span>
+                </div>
+
+                <!-- Selector de tipo con íconos mejorado -->
+                <div class="space-y-2">
+                    <label asp-for="Tipo" class="block text-sm font-medium text-gray-700">
+                        Tipo de contenido <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="relative cursor-pointer">
+                            <input type="radio" asp-for="Tipo" value="0" class="sr-only peer" id="tipoAnuncio">
+                            <div class="p-4 border-2 border-gray-200 rounded-xl text-center hover:border-university-300 peer-checked:border-university-600 peer-checked:bg-university-50 transition-all">
+                                <i class="fas fa-bullhorn text-2xl text-amber-500 mb-2"></i>
+                                <span class="block text-sm font-medium text-gray-700">Anuncio</span>
+                            </div>
+                        </label>
+                        <label class="relative cursor-pointer">
+                            <input type="radio" asp-for="Tipo" value="1" class="sr-only peer" id="tipoPDF">
+                            <div class="p-4 border-2 border-gray-200 rounded-xl text-center hover:border-university-300 peer-checked:border-university-600 peer-checked:bg-university-50 transition-all">
+                                <i class="fas fa-file-pdf text-2xl text-red-500 mb-2"></i>
+                                <span class="block text-sm font-medium text-gray-700">PDF</span>
+                            </div>
+                        </label>
+                        <label class="relative cursor-pointer">
+                            <input type="radio" asp-for="Tipo" value="2" class="sr-only peer" id="tipoVideo">
+                            <div class="p-4 border-2 border-gray-200 rounded-xl text-center hover:border-university-300 peer-checked:border-university-600 peer-checked:bg-university-50 transition-all">
+                                <i class="fas fa-video text-2xl text-blue-500 mb-2"></i>
+                                <span class="block text-sm font-medium text-gray-700">Video</span>
+                            </div>
+                        </label>
+                    </div>
+                    <span asp-validation-for="Tipo" class="text-red-600 text-sm"></span>
+                </div>
+
+                <!-- Contenedor para Anuncio (diseño mejorado) -->
+                <div id="contenidoTextoDiv" class="hidden space-y-2 bg-amber-50 p-6 rounded-xl border border-amber-200">
+                    <label asp-for="ContenidoTexto" class="block text-sm font-medium text-amber-800">
+                        <i class="fas fa-pencil-alt mr-2"></i>Contenido del Anuncio
+                    </label>
+                    <textarea asp-for="ContenidoTexto" rows="5" class="block w-full border-amber-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500" placeholder="Escribe tu anuncio aquí..."></textarea>
+                    <span asp-validation-for="ContenidoTexto" class="text-red-600 text-sm"></span>
+                    <p class="text-xs text-amber-600 mt-2">
+                        <i class="fas fa-info-circle"></i> Los anuncios se mostrarán en la página principal del curso
+                    </p>
+                </div>
+
+                <!-- Contenedor para PDF (diseño mejorado) -->
+                <div id="archivoPDFDiv" class="hidden space-y-2 bg-red-50 p-6 rounded-xl border border-red-200">
+                    <label class="block text-sm font-medium text-red-800">
+                        <i class="fas fa-file-pdf mr-2"></i>Archivo PDF
+                    </label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-red-300 border-dashed rounded-lg hover:border-red-400 transition">
+                        <div class="space-y-1 text-center">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-red-400"></i>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="archivoPDF" class="relative cursor-pointer bg-white rounded-md font-medium text-red-600 hover:text-red-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-red-500">
+                                    <span class="px-2">Selecciona un archivo</span>
+                                    <input id="archivoPDF" name="archivoPDF" type="file" class="sr-only" accept=".pdf">
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-500">PDF hasta 100MB</p>
+                            <p id="fileNameDisplay" class="text-sm text-gray-600 hidden"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenedor para Video (diseño mejorado) -->
+                <div id="urlVideoDiv" class="hidden space-y-2 bg-blue-50 p-6 rounded-xl border border-blue-200">
+                    <label asp-for="UrlVideo" class="block text-sm font-medium text-blue-800">
+                        <i class="fab fa-youtube mr-2"></i>URL del Video
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fab fa-youtube text-blue-400"></i>
+                        </div>
+                        <input asp-for="UrlVideo" class="pl-10 block w-full border-blue-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="https://www.youtube.com/embed/VIDEO_ID" />
+                    </div>
+                    <span asp-validation-for="UrlVideo" class="text-red-600 text-sm"></span>
+                    <p class="text-xs text-blue-600">
+                        <i class="fas fa-info-circle"></i> Usa el formato embed: https://www.youtube.com/embed/VIDEO_ID
+                    </p>
+                </div>
+
+                <!-- Botones de acción mejorados -->
+                <div class="flex items-center gap-3 pt-6 border-t border-gray-200">
+                    <button type="submit" class="bg-university-600 hover:bg-university-700 text-white font-medium py-3 px-8 rounded-lg transition transform hover:scale-105 shadow-lg shadow-university-200 flex items-center gap-2">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        Publicar Contenido
+                    </button>
+                    <a asp-action="Details" asp-route-id="@cursoId" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-lg transition flex items-center gap-2">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tips de ayuda -->
+    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <h3 class="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
+            <i class="fas fa-lightbulb"></i>
+            Tips para compartir contenido
+        </h3>
+        <ul class="space-y-2 text-sm text-blue-700">
+            <li class="flex items-center gap-2">
+                <i class="fas fa-check-circle text-blue-500"></i>
+                <span><strong>Anuncios:</strong> Ideales para comunicados importantes, recordatorios y mensajes generales.</span>
+            </li>
+            <li class="flex items-center gap-2">
+                <i class="fas fa-check-circle text-blue-500"></i>
+                <span><strong>PDFs:</strong> Comparte guías, lecturas, ejercicios y material de estudio.</span>
+            </li>
+            <li class="flex items-center gap-2">
+                <i class="fas fa-check-circle text-blue-500"></i>
+                <span><strong>Videos:</strong> Usa YouTube para subir tus clases grabadas y comparte el enlace embed.</span>
+            </li>
+        </ul>
     </div>
 </div>
 
@@ -63,23 +213,38 @@
 
     <script>
         $(document).ready(function() {
-            $('#tipoContenido').change(function() {
+            // Manejar cambio de tipo de contenido
+            $('input[name="Tipo"]').change(function() {
                 var tipo = $(this).val();
 
-                // Ocultar todos primero
-                $('#contenidoTextoDiv').hide();
-                $('#archivoPDFDiv').hide();
-                $('#urlVideoDiv').hide();
+                // Ocultar todos con animación
+                $('#contenidoTextoDiv, #archivoPDFDiv, #urlVideoDiv').fadeOut(200);
 
                 // Mostrar según selección
                 if (tipo == '0') { // Anuncio
-                    $('#contenidoTextoDiv').show();
+                    $('#contenidoTextoDiv').fadeIn(300);
                 } else if (tipo == '1') { // PDF
-                    $('#archivoPDFDiv').show();
+                    $('#archivoPDFDiv').fadeIn(300);
                 } else if (tipo == '2') { // Video
-                    $('#urlVideoDiv').show();
+                    $('#urlVideoDiv').fadeIn(300);
                 }
             });
+
+            // Mostrar nombre del archivo seleccionado
+            $('#archivoPDF').change(function() {
+                var fileName = $(this).val().split('\\').pop();
+                if (fileName) {
+                    $('#fileNameDisplay').text('Archivo seleccionado: ' + fileName).removeClass('hidden');
+                }
+            });
+
+            // Si ya hay un tipo seleccionado (por validación fallida), mostrarlo
+            var tipoSeleccionado = $('input[name="Tipo"]:checked').val();
+            if (tipoSeleccionado) {
+                if (tipoSeleccionado == '0') $('#contenidoTextoDiv').show();
+                else if (tipoSeleccionado == '1') $('#archivoPDFDiv').show();
+                else if (tipoSeleccionado == '2') $('#urlVideoDiv').show();
+            }
         });
     </script>
 }

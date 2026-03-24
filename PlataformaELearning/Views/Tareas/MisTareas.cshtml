@@ -5,16 +5,15 @@
     var entregas = ViewBag.Entregas as Dictionary<int, PlataformaELearning.Models.EntregaTarea>;
     bool tieneInscripciones = ViewBag.TieneInscripciones != null ? (bool)ViewBag.TieneInscripciones : true;
 
-    // Obtener el filtro activo desde la URL (por defecto "pendientes")
     var filtroActivo = Context.Request.Query["filtro"].ToString();
     if (string.IsNullOrEmpty(filtroActivo))
     {
         filtroActivo = "pendientes";
     }
 
-    // Clasificar tareas según el filtro
     var tareasFiltradas = new List<TareaApartado>();
     int contadorPendientes = 0;
+    int contadorEntregadas = 0;
     int contadorVencidas = 0;
     int contadorCalificadas = 0;
 
@@ -22,25 +21,28 @@
     {
         bool entregada = entregas != null && entregas.ContainsKey(tarea.Id);
         bool vencida = tarea.FechaLimite < DateTime.Now;
-
-        // Verificar si está calificada (tiene calificación)
         bool calificada = false;
+
         if (entregada && entregas != null)
         {
             var entrega = entregas[tarea.Id];
             calificada = entrega.CalificacionId != null;
         }
 
-        // Contar para los badges
+        // --- LÓGICA DE CONTEO ---
         if (!entregada && !vencida)
             contadorPendientes++;
+        else if (entregada && !calificada)
+            contadorEntregadas++;
         else if (vencida && !entregada)
             contadorVencidas++;
         else if (calificada)
             contadorCalificadas++;
 
-        // Filtrar según selección
+        // --- LÓGICA DE FILTRADO SERVIDOR ---
         if (filtroActivo == "pendientes" && !entregada && !vencida)
+            tareasFiltradas.Add(tarea);
+        else if (filtroActivo == "entregadas" && entregada && !calificada)
             tareasFiltradas.Add(tarea);
         else if (filtroActivo == "vencidas" && vencida && !entregada)
             tareasFiltradas.Add(tarea);
@@ -51,306 +53,182 @@
     }
 }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Mis Tareas</h1>
-        <p class="text-gray-600 mt-2">Gestiona tus tareas, entregas y calificaciones</p>
-    </div>
-
-    @if (!tieneInscripciones)
-    {
-        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-            <div class="flex items-center gap-3">
-                <i class="fas fa-exclamation-triangle text-amber-600"></i>
-                <p class="text-amber-800">
-                    No estás inscrito en ningún curso.
-                    <a asp-controller="Inscripciones" asp-action="CursosDisponibles" class="font-medium underline">
-                        Explora cursos disponibles
-                    </a>
-                </p>
-            </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate__animated animate__fadeIn">
+    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Mis Tareas</h1>
+            <p class="text-gray-600 mt-2">Gestiona tus tareas, entregas y calificaciones</p>
         </div>
-    }
+
+        <div class="w-full md:w-96 relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input type="text" id="buscadorTareas" placeholder="Buscar por tarea o curso..."
+                   class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-university-500 focus:border-university-500 outline-none transition shadow-sm text-sm">
+        </div>
+    </div>
 
     @if (Model != null && Model.Any())
     {
-        <!-- Filtros -->
-        <div class="mb-6">
-            <div class="flex flex-wrap gap-2">
-                <a asp-action="MisTareas" asp-route-filtro="pendientes"
-                   class="px-4 py-2 rounded-lg font-medium transition @(filtroActivo == "pendientes" ? "bg-university-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200")">
-                    <i class="fas fa-hourglass-half mr-1"></i>
-                    Pendientes
-                    @if (contadorPendientes > 0)
-                    {
-                        <span class="ml-1 px-2 py-0.5 text-xs rounded-full @(filtroActivo == "pendientes" ? "bg-white text-university-600" : "bg-university-600 text-white")">
-                            @contadorPendientes
-                        </span>
-                    }
-                </a>
+        <div class="mb-6 flex flex-wrap gap-2 overflow-x-auto pb-2">
+            <a asp-action="MisTareas" asp-route-filtro="pendientes"
+               class="px-4 py-2 rounded-lg font-medium transition @(filtroActivo == "pendientes" ? "bg-university-600 text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">
+                <i class="fas fa-hourglass-half mr-1"></i> Pendientes
+                @if (contadorPendientes > 0)
+                {
+                    <span class="ml-1 px-2 py-0.5 text-xs rounded-full @(filtroActivo == "pendientes" ? "bg-white text-university-600" : "bg-university-600 text-white")">@contadorPendientes</span>
+                }
+            </a>
 
-                <a asp-action="MisTareas" asp-route-filtro="vencidas"
-                   class="px-4 py-2 rounded-lg font-medium transition @(filtroActivo == "vencidas" ? "bg-red-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200")">
-                    <i class="fas fa-clock mr-1"></i>
-                    Vencidas
-                    @if (contadorVencidas > 0)
-                    {
-                        <span class="ml-1 px-2 py-0.5 text-xs rounded-full @(filtroActivo == "vencidas" ? "bg-white text-red-600" : "bg-red-600 text-white")">
-                            @contadorVencidas
-                        </span>
-                    }
-                </a>
+            <a asp-action="MisTareas" asp-route-filtro="entregadas"
+               class="px-4 py-2 rounded-lg font-medium transition @(filtroActivo == "entregadas" ? "bg-blue-600 text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">
+                <i class="fas fa-check-double mr-1"></i> Entregadas
+                @if (contadorEntregadas > 0)
+                {
+                    <span class="ml-1 px-2 py-0.5 text-xs rounded-full @(filtroActivo == "entregadas" ? "bg-white text-blue-600" : "bg-blue-600 text-white")">@contadorEntregadas</span>
+                }
+            </a>
 
-                <a asp-action="MisTareas" asp-route-filtro="calificadas"
-                   class="px-4 py-2 rounded-lg font-medium transition @(filtroActivo == "calificadas" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200")">
-                    <i class="fas fa-star mr-1"></i>
-                    Calificadas
-                    @if (contadorCalificadas > 0)
-                    {
-                        <span class="ml-1 px-2 py-0.5 text-xs rounded-full @(filtroActivo == "calificadas" ? "bg-white text-green-600" : "bg-green-600 text-white")">
-                            @contadorCalificadas
-                        </span>
-                    }
-                </a>
+            <a asp-action="MisTareas" asp-route-filtro="vencidas"
+               class="px-4 py-2 rounded-lg font-medium transition @(filtroActivo == "vencidas" ? "bg-red-600 text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">
+                <i class="fas fa-clock mr-1"></i> Vencidas
+                @if (contadorVencidas > 0)
+                {
+                    <span class="ml-1 px-2 py-0.5 text-xs rounded-full @(filtroActivo == "vencidas" ? "bg-white text-red-600" : "bg-red-600 text-white")">@contadorVencidas</span>
+                }
+            </a>
 
-                <a asp-action="MisTareas" asp-route-filtro="todas"
-                   class="px-4 py-2 rounded-lg font-medium transition @(filtroActivo == "todas" ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200")">
-                    <i class="fas fa-list mr-1"></i>
-                    Todas
-                </a>
-            </div>
+            <a asp-action="MisTareas" asp-route-filtro="calificadas"
+               class="px-4 py-2 rounded-lg font-medium transition @(filtroActivo == "calificadas" ? "bg-green-600 text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">
+                <i class="fas fa-star mr-1"></i> Calificadas
+                @if (contadorCalificadas > 0)
+                {
+                    <span class="ml-1 px-2 py-0.5 text-xs rounded-full @(filtroActivo == "calificadas" ? "bg-white text-green-600" : "bg-green-600 text-white")">@contadorCalificadas</span>
+                }
+            </a>
+
+            <a asp-action="MisTareas" asp-route-filtro="todas"
+               class="px-4 py-2 rounded-lg font-medium transition @(filtroActivo == "todas" ? "bg-gray-800 text-white shadow-md" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">
+                <i class="fas fa-list mr-1"></i> Todas
+            </a>
         </div>
 
-        <!-- Mensaje cuando no hay tareas en el filtro seleccionado -->
-        @if (!tareasFiltradas.Any())
-        {
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    @if (filtroActivo == "pendientes")
-                    {
-                        <i class="fas fa-check-circle text-4xl text-green-600"></i>
-                    }
-                    else if (filtroActivo == "vencidas")
-                    {
-                        <i class="fas fa-calendar-times text-4xl text-gray-400"></i>
-                    }
-                    else if (filtroActivo == "calificadas")
-                    {
-                        <i class="fas fa-chart-line text-4xl text-gray-400"></i>
-                    }
-                    else
-                    {
-                        <i class="fas fa-tasks text-4xl text-gray-400"></i>
-                    }
-                </div>
+        <div id="contenedorTareas" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            @foreach (var tarea in tareasFiltradas)
+            {
+                bool entregada = entregas != null && entregas.ContainsKey(tarea.Id);
+                bool vencida = tarea.FechaLimite < DateTime.Now;
+                bool proxima = !vencida && (tarea.FechaLimite - DateTime.Now).TotalDays <= 2;
+                string cursoNombre = tarea.Apartado?.Curso?.Nombre ?? "Curso sin nombre";
 
-                <h3 class="text-xl font-bold text-gray-900 mb-2">
-                    @if (filtroActivo == "pendientes")
-                    {
-                        <span>¡No hay tareas pendientes!</span>
-                    }
-                    else if (filtroActivo == "vencidas")
-                    {
-                        <span>No hay tareas vencidas</span>
-                    }
-                    else if (filtroActivo == "calificadas")
-                    {
-                        <span>No hay tareas calificadas aún</span>
-                    }
-                    else
-                    {
-                        <span>No hay tareas disponibles</span>
-                    }
-                </h3>
-
-                <p class="text-gray-500 mb-6">
-                    @if (filtroActivo == "pendientes")
-                    {
-                        <span>¡Todas las tareas están completadas o aún no hay nuevas asignaciones!</span>
-                    }
-                    else if (filtroActivo == "vencidas")
-                    {
-                        <span>No tienes tareas que hayan vencido sin entregar.</span>
-                    }
-                    else if (filtroActivo == "calificadas")
-                    {
-                        <span>Aún no hay calificaciones disponibles. Espera a que los profesores revisen tus entregas.</span>
-                    }
-                    else
-                    {
-                        <span>No hay tareas asignadas en los cursos en los que estás inscrito.</span>
-                    }
-                </p>
-
-                @if (filtroActivo != "todas")
+                bool calificada = false;
+                string calificacionNota = "";
+                if (entregada && entregas != null)
                 {
-                    <a asp-action="MisTareas" asp-route-filtro="todas"
-                       class="inline-flex items-center gap-2 text-university-600 hover:text-university-700 font-medium">
-                        <i class="fas fa-list"></i>
-                        Ver todas las tareas
-                    </a>
+                    var entregaObj = entregas[tarea.Id];
+                    calificada = entregaObj.CalificacionId != null;
+                    if (calificada && entregaObj.Calificacion != null)
+                    {
+                        calificacionNota = entregaObj.Calificacion.Puntuacion.ToString("F1");
+                    }
                 }
-            </div>
-        }
 
-        <!-- Grid de tareas filtradas -->
-        @if (tareasFiltradas.Any())
-        {
-            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                @foreach (var tarea in tareasFiltradas)
-                {
-                    bool entregada = entregas != null && entregas.ContainsKey(tarea.Id);
-                    bool vencida = tarea.FechaLimite < DateTime.Now;
-                    bool proxima = !vencida && (tarea.FechaLimite - DateTime.Now).TotalDays <= 2;
-                    string cursoNombre = tarea.Apartado?.Curso?.Nombre ?? "Curso sin nombre";
-
-                    // Verificar si está calificada
-                    bool calificada = false;
-                    string calificacionNota = "";
-                    if (entregada && entregas != null)
-                    {
-                        var entrega = entregas[tarea.Id];
-                        calificada = entrega.CalificacionId != null;
-                        if (calificada && entrega.Calificacion != null)
-                        {
-                            calificacionNota = entrega.Calificacion.Puntuacion.ToString("F2");
-                        }
-                    }
-
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition group">
-                        <!-- Barra de estado según filtro activo -->
-                        <div class="h-2 @(calificada ? "bg-green-500" : (vencida ? "bg-red-500" : (proxima ? "bg-amber-500" : "bg-university-500")))"></div>
-
-                        <div class="p-6">
-                            <!-- Estado -->
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium
-                                    @(calificada ? "bg-green-100 text-green-700" :
-                                      (entregada ? "bg-blue-100 text-blue-700" :
-                                      (vencida ? "bg-red-100 text-red-700" :
-                                      (proxima ? "bg-amber-100 text-amber-700" : "bg-university-100 text-university-700"))))">
-
-                                    @if (calificada)
-                                    {
-                                        <i class="fas fa-star"></i>
-                                        <span>Calificada: @calificacionNota /10</span>
-                                    }
-                                    else if (entregada)
-                                    {
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Entregada (pendiente)</span>
-                                    }
-                                    else if (vencida)
-                                    {
-                                        <i class="fas fa-clock"></i>
-                                        <span>Vencida</span>
-                                    }
-                                    else if (proxima)
-                                    {
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                        <span>Próxima a vencer</span>
-                                    }
-                                    else
-                                    {
-                                        <i class="fas fa-hourglass-half"></i>
-                                        <span>Pendiente</span>
-                                    }
-                                </span>
-
-                                <span class="text-sm font-bold text-university-600">
-                                    @tarea.PuntosTotales pts
-                                </span>
-                            </div>
-
-                            <!-- Título -->
-                            <h3 class="text-lg font-semibold text-gray-900 mb-1">
-                                @tarea.Titulo
-                            </h3>
-
-                            <p class="text-sm text-university-600 mb-3">
-                                @cursoNombre
-                            </p>
-
-                            @if (!string.IsNullOrEmpty(tarea.TipoTarea))
-                            {
-                                <span class="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full mb-3">
-                                    @tarea.TipoTarea
-                                </span>
-                            }
-
-                            <!-- Fecha -->
-                            <div class="flex items-center gap-2 text-sm mb-4
-                                @(vencida ? "text-red-600" : (proxima ? "text-amber-600" : "text-gray-600"))">
-                                <i class="far fa-calendar-alt"></i>
-                                <span>
-                                    Límite: @tarea.FechaLimite.ToString("dd/MM/yyyy HH:mm")
-                                </span>
-                            </div>
-
-                            <!-- Materiales -->
-                            @if (tarea.Materiales != null && tarea.Materiales.Any())
-                            {
-                                <div class="flex items-center gap-2 text-xs text-gray-500 mb-4">
-                                    <i class="fas fa-paperclip"></i>
-                                    <span>@tarea.Materiales.Count() materiales de apoyo</span>
-                                </div>
-                            }
-
-                            <!-- Botón de acción -->
-                            @if (calificada)
-                            {
-                                <a asp-controller="Tareas" asp-action="Detalle" asp-route-id="@tarea.Id"
-                                   class="block w-full text-center py-2.5 rounded-lg font-medium transition bg-green-600 hover:bg-green-700 text-white">
-                                    <i class="fas fa-eye mr-1"></i> Ver calificación
-                                </a>
-                            }
-                            else if (vencida && !entregada)
-                            {
-                                <div class="block w-full text-center py-2.5 rounded-lg font-medium bg-gray-300 text-gray-500 cursor-not-allowed">
-                                    <i class="fas fa-ban mr-1"></i> Tarea vencida
-                                </div>
-                            }
-                            else
-                            {
-                                <a asp-action="Detalle" asp-route-id="@tarea.Id"
-                                   class="block w-full text-center py-2.5 rounded-lg font-medium transition
-                                   @(entregada ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-university-600 hover:bg-university-700 text-white")">
-                                    @if (entregada)
-                                    {
-                                        <i class="fas fa-eye mr-1"></i> <span>Ver mi entrega</span>
-                                    }
-                                    else
-                                    {
-                                        <i class="fas fa-upload mr-1"></i> <span>Entregar tarea</span>
-                                    }
-                                </a>
-                            }
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition group tarjeta-tarea">
+                    <div class="h-2 @(calificada ? "bg-green-500" : (entregada ? "bg-blue-500" : (vencida ? "bg-red-500" : (proxima ? "bg-amber-500" : "bg-university-500"))))"></div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium
+                                        @(calificada ? "bg-green-100 text-green-700" : (entregada ? "bg-blue-100 text-blue-700" : (vencida ? "bg-red-100 text-red-700" : "bg-university-100 text-university-700")))">
+                                @if (calificada)
+                                {
+                                    <i class="fas fa-star text-[10px]"></i>
+                                    <span>Nota: @calificacionNota</span>
+         }
+                                else if (entregada)
+                                {
+                                    <i class="fas fa-check-double text-[10px]"></i>
+                                    <span>Entregada</span>
+         }
+                                else if (vencida)
+                                {
+                                    <i class="fas fa-clock text-[10px]"></i>
+                                    <span>Vencida</span>
+         }
+                                else
+                                {
+                                    <i class="fas fa-hourglass-half text-[10px]"></i>
+                                    <span>Pendiente</span>
+         }
+                            </span>
+                            <span class="text-sm font-bold text-university-600">@tarea.PuntosTotales pts</span>
                         </div>
+
+                        <h3 class="text-lg font-bold text-gray-900 mb-1 titulo-tarea">@tarea.Titulo</h3>
+                        <p class="text-sm text-university-600 mb-3 curso-tarea">@cursoNombre</p>
+
+                        <div class="flex items-center gap-2 text-sm mb-4 @(vencida && !entregada ? "text-red-600" : "text-gray-600")">
+                            <i class="far fa-calendar-alt"></i>
+                            <span>Límite: @tarea.FechaLimite.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+
+                        @if (calificada)
+                        {
+                            <a asp-action="Detalle" asp-route-id="@tarea.Id" class="block w-full text-center py-2.5 rounded-lg font-bold transition bg-green-600 text-white hover:bg-green-700 shadow-sm shadow-green-100">Ver Calificación</a>
+                        }
+                        else if (entregada)
+                        {
+                            <a asp-action="Detalle" asp-route-id="@tarea.Id" class="block w-full text-center py-2.5 rounded-lg font-bold transition bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-100">Ver mi Entrega</a>
+                        }
+                        else if (vencida)
+                        {
+                            <div class="block w-full text-center py-2.5 rounded-lg font-bold bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200">Plazo Vencido</div>
+                        }
+                        else
+                        {
+                            <a asp-action="Detalle" asp-route-id="@tarea.Id" class="block w-full text-center py-2.5 rounded-lg font-bold transition bg-university-600 text-white hover:bg-university-700 shadow-lg shadow-university-100">Entregar Tarea</a>
+                        }
                     </div>
-                }
-            </div>
-        }
-    }
-    else if (tieneInscripciones)
-    {
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-            <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-check-circle text-4xl text-green-600"></i>
-            </div>
+                </div>
+            }
+        </div>
 
-            <h3 class="text-xl font-bold text-gray-900 mb-2">
-                ¡No hay tareas disponibles!
-            </h3>
-
-            <p class="text-gray-500 mb-6">
-                Por ahora no tienes tareas asignadas. Disfruta el descanso.
-            </p>
-
-            <a asp-controller="Inscripciones" asp-action="MisCursos"
-               class="text-university-600 hover:text-university-700 font-medium">
-                Ver mis cursos
-            </a>
+        <div id="mensajeSinResultados" class="hidden bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center mt-6">
+            <div class="text-gray-300 mb-4"><i class="fas fa-search text-6xl"></i></div>
+            <h3 class="text-xl font-medium text-gray-900 mb-2">No se encontraron tareas</h3>
+            <p class="text-gray-500">Prueba con otros términos de búsqueda.</p>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Buscador dinámico por título de tarea o nombre del curso
+            $("#buscadorTareas").on("keyup", function () {
+                var valor = $(this).val().toLowerCase();
+                var encontrados = 0;
+
+                $(".tarjeta-tarea").each(function () {
+                    var texto = $(this).find('.titulo-tarea').text() + " " +
+                                $(this).find('.curso-tarea').text();
+
+                    if (texto.toLowerCase().indexOf(valor) > -1) {
+                        $(this).show();
+                        encontrados++;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+
+                if (encontrados === 0 && valor !== "") {
+                    $("#mensajeSinResultados").removeClass("hidden");
+                    $("#contenedorTareas").addClass("hidden");
+                } else {
+                    $("#mensajeSinResultados").addClass("hidden");
+                    $("#contenedorTareas").removeClass("hidden");
+                }
+            });
+        });
+    </script>
+}

@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -6,7 +7,7 @@
     <title>@ViewData["Title"] - Plataforma e-Learning</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 
     <script>
@@ -28,14 +29,45 @@
             }
         }
     </script>
+    <style>
+        /* Estilos base para navegación */
+        .nav-link-active {
+            color: #16a34a !important;
+            font-weight: 700;
+            border-bottom: 2px solid #16a34a;
+        }
+
+        @@media (max-width: 1024px) {
+            .nav-link-active {
+                border-bottom: none;
+                background: #f0fdf4;
+            }
+        }
+
+        /* Clases generadas para el API de Accesibilidad */
+        html {
+            transition: filter 0.3s ease, font-size 0.3s ease;
+        }
+
+            html.alto-contraste {
+                filter: invert(100%) hue-rotate(180deg) contrast(120%);
+                background-color: #111;
+            }
+
+                html.alto-contraste img,
+                html.alto-contraste iframe,
+                html.alto-contraste .no-invert {
+                    filter: invert(100%) hue-rotate(180deg) contrast(100%);
+                }
+    </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased text-gray-900 flex flex-col min-h-screen">
     <header>
-        <nav class="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-50">
+        <nav class="bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-40">
 
             <div class="flex items-center gap-8">
                 <a asp-controller="Home" asp-action="Index" class="flex items-center gap-2">
-                    <div class="bg-university-600 p-2 rounded-lg shadow-inner">
+                    <div class="bg-university-600 p-2 rounded-lg shadow-inner no-invert">
                         <i class="fas fa-graduation-cap text-white text-xl"></i>
                     </div>
                     <span class="font-extrabold text-xl tracking-tight text-gray-800">Edu<span class="text-university-600">Nix</span></span>
@@ -67,8 +99,7 @@
                             </a>
                             <a asp-controller="Profesor" asp-action="TareasPendientes" class="text-amber-600 hover:text-amber-700 font-medium transition relative" title="Tareas por calificar">
                                 <i class="fas fa-clock mr-1"></i> Pendientes
-                                <!-- Badge dinámico para profesor (luego se implementará) -->
-                                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">3</span>
+                                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">@(ViewBag.PendientesMaestro ?? 0)</span>
                             </a>
                             <a asp-controller="Cursos" asp-action="Index" class="text-gray-600 hover:text-university-600 font-medium transition">
                                 <i class="fas fa-layer-group mr-1"></i> Gestionar Cursos
@@ -76,7 +107,6 @@
                         }
                         else if (User.IsInRole("Alumno"))
                         {
-                            <!-- ========== ENLACES PARA ALUMNO CON INSCRIPCIONES ========== -->
                             <a asp-controller="Inscripciones" asp-action="MisCursos"
                                class="text-gray-600 hover:text-university-600 font-medium transition flex items-center gap-1 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Inscripciones" && ViewContext.RouteData.Values["action"]?.ToString() == "MisCursos" ? "text-university-600 font-bold" : "")">
                                 <i class="fas fa-book mr-1"></i> Mis Cursos
@@ -88,8 +118,7 @@
                             <a asp-controller="Tareas" asp-action="MisTareas"
                                class="text-university-600 hover:text-university-700 font-medium transition relative flex items-center gap-1">
                                 <i class="fas fa-tasks mr-1"></i> Mis Tareas
-                                <!-- Badge dinámico (se actualizará en el futuro) -->
-                                <span class="ml-1 bg-university-600 text-white text-xs rounded-full px-2 py-0.5">2</span>
+                                <span class="ml-1 bg-university-600 text-white text-xs rounded-full px-2 py-0.5">@(ViewBag.PendientesAlumno ?? 0)</span>
                             </a>
                             <a asp-controller="Calificaciones" asp-action="Index" class="text-gray-600 hover:text-university-600 font-medium transition">
                                 <i class="fas fa-star mr-1"></i> Calificaciones
@@ -107,7 +136,7 @@
                         <p class="text-xs text-university-600 font-medium">@User.Claims.FirstOrDefault(c => c.Type == "Matricula")?.Value</p>
                     </div>
 
-                    <a asp-controller="Profile" asp-action="Index" class="relative w-10 h-10 rounded-full bg-university-100 text-university-600 flex items-center justify-center hover:bg-university-200 transition-colors border border-university-200 overflow-hidden group shadow-sm" title="Mi Perfil">
+                    <a asp-controller="Profile" asp-action="Index" class="relative w-10 h-10 rounded-full bg-university-100 text-university-600 flex items-center justify-center hover:bg-university-200 transition-colors border border-university-200 overflow-hidden group shadow-sm no-invert" title="Mi Perfil">
                         @{
                             var displayName = User.Identity.Name ?? "U";
                             var initials = displayName.Length > 1 ? displayName.Substring(0, 2).ToUpper() : displayName.ToUpper();
@@ -120,11 +149,15 @@
                              alt="Avatar" />
                     </a>
 
-                    <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="hidden md:block m-0">
                         <button type="submit" class="text-gray-500 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50" title="Cerrar Sesión">
                             <i class="fas fa-sign-out-alt text-lg"></i>
                         </button>
                     </form>
+
+                    <button id="mobile-menu-btn" class="md:hidden text-gray-500 hover:text-university-600 focus:outline-none ml-2">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
                 }
                 else
                 {
@@ -133,6 +166,45 @@
                 }
             </div>
         </nav>
+
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-gray-100 shadow-md">
+                <div class="px-6 py-4 space-y-3">
+                    <div class="mb-4 pb-4 border-b border-gray-100">
+                        <p class="text-base font-bold text-gray-800">@User.Identity.Name</p>
+                        <p class="text-sm text-university-600 font-medium">@User.Claims.FirstOrDefault(c => c.Type == "Matricula")?.Value</p>
+                    </div>
+
+                    @if (User.IsInRole("Administrador"))
+                    {
+                        <a asp-controller="Admin" asp-action="Index" class="block text-gray-600 hover:text-university-600 font-medium py-2"><i class="fas fa-users-cog w-6"></i> Usuarios</a>
+                        <a asp-controller="Cursos" asp-action="Index" class="block text-gray-600 hover:text-university-600 font-medium py-2"><i class="fas fa-book-open w-6"></i> Cursos</a>
+                        <a asp-controller="Cursos" asp-action="Create" class="block text-gray-600 hover:text-university-600 font-medium py-2"><i class="fas fa-plus-circle w-6"></i> Nuevo Curso</a>
+                        <a asp-controller="Apartados" asp-action="Index" asp-route-cursoId="1" class="block text-gray-600 hover:text-university-600 font-medium py-2"><i class="fas fa-layer-group w-6"></i> Apartados</a>
+                    }
+                    else if (User.IsInRole("Maestro"))
+                    {
+                        <a asp-controller="Profesor" asp-action="MisCursos" class="block text-gray-600 hover:text-university-600 font-medium py-2"><i class="fas fa-chalkboard-teacher w-6"></i> Mis Cursos</a>
+                        <a asp-controller="Profesor" asp-action="TareasPendientes" class="block text-amber-600 font-medium py-2"><i class="fas fa-clock w-6"></i> Pendientes (@(ViewBag.PendientesMaestro ?? 0))</a>
+                        <a asp-controller="Cursos" asp-action="Index" class="block text-gray-600 hover:text-university-600 font-medium py-2"><i class="fas fa-layer-group w-6"></i> Gestionar Cursos</a>
+                    }
+                    else if (User.IsInRole("Alumno"))
+                    {
+                        <a asp-controller="Inscripciones" asp-action="MisCursos" class="block text-gray-600 hover:text-university-600 font-medium py-2"><i class="fas fa-book w-6"></i> Mis Cursos</a>
+                        <a asp-controller="Inscripciones" asp-action="CursosDisponibles" class="block text-gray-600 hover:text-university-600 font-medium py-2"><i class="fas fa-search w-6"></i> Explorar Cursos</a>
+                        <a asp-controller="Tareas" asp-action="MisTareas" class="block text-university-600 font-bold py-2"><i class="fas fa-tasks w-6"></i> Mis Tareas (@(ViewBag.PendientesAlumno ?? 0))</a>
+                        <a asp-controller="Calificaciones" asp-action="Index" class="block text-gray-600 hover:text-university-600 font-medium py-2"><i class="fas fa-star w-6"></i> Calificaciones</a>
+                    }
+
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="pt-4 border-t border-gray-100">
+                        <button type="submit" class="w-full text-left text-red-500 hover:text-red-700 font-medium py-2">
+                            <i class="fas fa-sign-out-alt w-6"></i> Cerrar Sesión
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
     </header>
 
     <main role="main" class="flex-grow">
@@ -143,6 +215,46 @@
         <p>&copy; 2026 - Universidad Tecnológica - EduNix Platform</p>
     </footer>
 
+    <div class="fixed bottom-6 right-6 z-50 animate__animated animate__fadeInUp">
+        <button id="btnAccessibilityToggle" class="bg-[#153b68] text-white w-14 h-14 rounded-full shadow-[0_10px_25px_-5px_rgba(21,59,104,0.5)] flex items-center justify-center hover:scale-110 hover:bg-[#1e4d8a] transition-all focus:outline-none ring-4 ring-transparent focus:ring-[#1e4d8a]/50 no-invert" title="Opciones de Accesibilidad" aria-label="Abrir menú de accesibilidad">
+            <i class="fab fa-accessible-icon text-3xl"></i>
+        </button>
+
+        <div id="menuAccessibility" class="hidden absolute bottom-16 right-0 mb-4 w-72 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transform origin-bottom-right transition-all">
+            <div class="bg-[#153b68] px-4 py-3 text-white flex justify-between items-center no-invert">
+                <h3 class="font-bold text-lg"><i class="fab fa-accessible-icon mr-2"></i>Accesibilidad</h3>
+                <button id="closeAccessibility" class="text-white/80 hover:text-white transition"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <div class="p-4 space-y-3">
+
+                <button id="btnLectorVoz" class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-blue-50 rounded-xl transition border border-gray-100 text-gray-700 font-medium group">
+                    <span class="group-hover:text-[#153b68]"><i class="fas fa-volume-up mr-2 text-[#153b68]"></i> Lector de Voz</span>
+                    <div class="w-10 h-5 bg-gray-300 rounded-full relative transition-colors toggle-bg">
+                        <div class="w-5 h-5 bg-white rounded-full shadow absolute left-0 transition-transform toggle-dot"></div>
+                    </div>
+                </button>
+
+                <button id="btnAltoContraste" class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-blue-50 rounded-xl transition border border-gray-100 text-gray-700 font-medium group">
+                    <span class="group-hover:text-[#153b68]"><i class="fas fa-adjust mr-2 text-[#153b68]"></i> Alto Contraste</span>
+                    <div class="w-10 h-5 bg-gray-300 rounded-full relative transition-colors toggle-bg">
+                        <div class="w-5 h-5 bg-white rounded-full shadow absolute left-0 transition-transform toggle-dot"></div>
+                    </div>
+                </button>
+
+                <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                    <span class="block text-gray-700 font-medium mb-3 text-sm"><i class="fas fa-text-height mr-2 text-[#153b68]"></i> Tamaño de Fuente</span>
+                    <div class="flex justify-between gap-2">
+                        <button id="btnTextDec" class="flex-1 bg-white border border-gray-200 py-1.5 rounded-lg hover:bg-gray-100 font-bold text-gray-600 transition hover:text-[#153b68] shadow-sm">- A</button>
+                        <button id="btnTextReset" class="flex-1 bg-white border border-gray-200 py-1.5 rounded-lg hover:bg-gray-100 font-bold text-gray-600 transition hover:text-[#153b68] shadow-sm"><i class="fas fa-undo"></i></button>
+                        <button id="btnTextInc" class="flex-1 bg-white border border-gray-200 py-1.5 rounded-lg hover:bg-gray-100 font-bold text-gray-600 transition hover:text-[#153b68] shadow-sm">A +</button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 p-2 text-center text-xs text-gray-400 border-t border-gray-100">
+                Impulsado por EduNix API
+            </div>
+        </div>
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
@@ -155,6 +267,95 @@
             "showMethod": "fadeIn",
             "hideMethod": "fadeOut"
         };
+
+        $(document).ready(function () {
+            // Lógica Menú Móvil
+            $('#mobile-menu-btn').on('click', function () {
+                $('#mobile-menu').slideToggle('fast');
+                $(this).find('i').toggleClass('fa-bars fa-times');
+            });
+
+            // Lógica de Accesibilidad: Abrir/Cerrar Widget
+            $('#btnAccessibilityToggle, #closeAccessibility').click(function() {
+                $('#menuAccessibility').toggleClass('hidden animate__animated animate__fadeInUp');
+            });
+
+            // Lógica de Accesibilidad: Tamaño de Texto (DOM manipulation)
+            let currentZoom = 100;
+            $('#btnTextInc').click(function() {
+                if(currentZoom < 140) {
+                    currentZoom += 10;
+                    $('html').css('font-size', currentZoom + '%');
+                }
+            });
+            $('#btnTextDec').click(function() {
+                if(currentZoom > 70) {
+                    currentZoom -= 10;
+                    $('html').css('font-size', currentZoom + '%');
+                }
+            });
+            $('#btnTextReset').click(function() {
+                currentZoom = 100;
+                $('html').css('font-size', '100%');
+            });
+
+            // Lógica de Accesibilidad: Alto Contraste (CSS Filters)
+            $('#btnAltoContraste').click(function() {
+                $('html').toggleClass('alto-contraste');
+
+                // Animar el switch toggle
+                let dot = $(this).find('.toggle-dot');
+                let bg = $(this).find('.toggle-bg');
+
+                if($('html').hasClass('alto-contraste')){
+                    bg.removeClass('bg-gray-300').addClass('bg-[#153b68]');
+                    dot.addClass('translate-x-5');
+                } else {
+                    bg.removeClass('bg-[#153b68]').addClass('bg-gray-300');
+                    dot.removeClass('translate-x-5');
+                }
+            });
+
+            // Lógica de Accesibilidad: Lector de Voz (Web Speech API)
+            let lectorActivo = false;
+            $('#btnLectorVoz').click(function() {
+                lectorActivo = !lectorActivo;
+
+                // Animar el switch toggle
+                let dot = $(this).find('.toggle-dot');
+                let bg = $(this).find('.toggle-bg');
+
+                if(lectorActivo){
+                    bg.removeClass('bg-gray-300').addClass('bg-[#153b68]');
+                    dot.addClass('translate-x-5');
+                    toastr.info("Lector de voz activado. Pasa el cursor sobre los textos para leer.");
+                } else {
+                    bg.removeClass('bg-[#153b68]').addClass('bg-gray-300');
+                    dot.removeClass('translate-x-5');
+                    window.speechSynthesis.cancel();
+                    toastr.info("Lector de voz desactivado.");
+                }
+            });
+
+            // Trigger del Web Speech API al pasar el mouse por elementos legibles
+            $('p, h1, h2, h3, h4, h5, h6, span, a, button, li').on('mouseenter', function(e) {
+                if(lectorActivo) {
+                    e.stopPropagation(); // Evita leer el contenedor padre entero si estamos en un hijo
+                    window.speechSynthesis.cancel();
+                    let text = $(this).text().trim();
+                    if(text) {
+                        let msg = new SpeechSynthesisUtterance(text);
+                        msg.lang = 'es-MX'; // Español de México
+                        msg.rate = 1.0;     // Velocidad normal
+                        window.speechSynthesis.speak(msg);
+                    }
+                }
+            }).on('mouseleave', function() {
+                if(lectorActivo) {
+                    window.speechSynthesis.cancel();
+                }
+            });
+        });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

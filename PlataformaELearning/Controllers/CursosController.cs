@@ -68,49 +68,20 @@ namespace PlataformaELearning.Controllers
         }
 
         // ========== DETAILS MODIFICADO: Verificar permisos ==========
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null) return NotFound();
-
             var curso = await _context.Cursos
                 .Include(c => c.Maestro)
                 .Include(c => c.Contenidos)
-                .Include(c => c.Apartados!)
-                    .ThenInclude(a => a.Tareas!)
+                .Include(c => c.Apartados).ThenInclude(a => a.Tareas).ThenInclude(t => t.Materiales)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (curso == null) return NotFound();
-
-            // VERIFICAR PERMISOS:
-            // - Admin puede ver todo
-            // - Profesor solo puede ver sus cursos
-            // - Alumno solo puede ver cursos inscritos
-            if (User.IsInRole("Maestro"))
+            if (User.IsInRole("Alumno"))
             {
-                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (userIdClaim != null)
-                {
-                    int userId = int.Parse(userIdClaim);
-                    if (curso.MaestroId != userId)
-                    {
-                        return Forbid(); // Devuelve 403 - Acceso denegado
-                    }
-                }
-            }
-            else if (User.IsInRole("Alumno"))
-            {
-                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (userIdClaim != null)
-                {
-                    int userId = int.Parse(userIdClaim);
-                    bool inscrito = await _context.Inscripciones
-                        .AnyAsync(i => i.CursoId == id && i.AlumnoId == userId);
-
-                    if (!inscrito)
-                    {
-                        return Forbid(); // Devuelve 403 - Acceso denegado
-                    }
-                }
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                ViewBag.Entregas = await _context.EntregasTareas
+                    .Where(e => e.AlumnoId == userId)
+                    .ToDictionaryAsync(e => e.TareaId);
             }
 
             return View(curso);

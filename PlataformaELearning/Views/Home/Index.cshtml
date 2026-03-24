@@ -1,9 +1,10 @@
 ﻿@using System.Security.Claims
+@model PlataformaELearning.Models.ViewModels.PortalDashboardViewModel
 @{
     ViewData["Title"] = "Portal Institucional";
-    // Rescatamos los datos institucionales desde los Claims que guardaste en el Login
     var matricula = User.Claims.FirstOrDefault(c => c.Type == "Matricula")?.Value ?? "Pendiente";
-    var rol = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Estudiante";
+    var rol = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Alumno";
+    var etiquetaId = rol == "Alumno" ? "Matrícula Oficial" : "Número de Empleado";
 }
 
 <div class="p-4 md:p-8 animate__animated animate__fadeIn max-w-7xl mx-auto">
@@ -13,9 +14,9 @@
 
         <div class="relative z-10">
             <div class="flex items-center gap-3 mb-3">
-                <span class="bg-university-100 text-university-700 py-1 px-3 rounded-full text-xs font-bold uppercase tracking-wider border border-university-200">Ciclo Escolar 2026</span>
+                <span class="bg-university-100 text-university-700 py-1 px-3 rounded-full text-xs font-bold uppercase tracking-wider border border-university-200">@Model.CicloEscolarActual</span>
                 <span class="bg-blue-100 text-blue-700 py-1 px-3 rounded-full text-xs font-bold uppercase tracking-wider border border-blue-200">
-                    <i class="fas fa-user-graduate mr-1"></i> @rol
+                    <i class="fas fa-user-circle mr-1"></i> @rol
                 </span>
             </div>
             <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Portal Académico Institucional</h1>
@@ -23,59 +24,177 @@
         </div>
 
         <div class="mt-6 md:mt-0 text-left md:text-right relative z-10 bg-white/60 p-4 rounded-2xl backdrop-blur-sm border border-gray-100">
-            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Matrícula Oficial</p>
+            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">@etiquetaId</p>
             <p class="text-2xl font-mono font-black text-gray-800 tracking-wider">@matricula</p>
         </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
 
-        <div class="md:col-span-8 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-university-50 rounded-bl-[100px] -z-0 transition-transform duration-500 group-hover:scale-110"></div>
-
-            <div class="relative z-10">
-                <div class="flex justify-between items-start mb-6">
-                    <div class="bg-university-100 w-14 h-14 rounded-2xl flex items-center justify-center text-university-600 shadow-inner">
-                        <i class="fas fa-chalkboard-teacher text-2xl"></i>
+        @if (rol == "Alumno")
+        {
+            <div class="md:col-span-8 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-university-50 rounded-bl-[100px] -z-0 transition-transform duration-500 group-hover:scale-110"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="bg-university-100 w-14 h-14 rounded-2xl flex items-center justify-center text-university-600 shadow-inner">
+                            <i class="fas fa-chalkboard-teacher text-2xl"></i>
+                        </div>
+                        <a asp-controller="Inscripciones" asp-action="MisCursos" class="text-university-600 font-bold text-sm hover:underline flex items-center gap-1">
+                            Ir al Campus Virtual <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
                     </div>
-                    <button class="text-university-600 font-bold text-sm hover:underline flex items-center gap-1">
-                        Ir al Campus Virtual <i class="fas fa-arrow-right text-xs"></i>
-                    </button>
+                    <h3 class="font-bold text-2xl text-gray-800 mb-2">Aulas Virtuales</h3>
+                    <p class="text-gray-500 mb-6 font-medium">Accede a tus materias activas, material didáctico y gestión de cursos.</p>
+                    <div class="w-full bg-gray-100 rounded-full h-3 mb-2 shadow-inner overflow-hidden">
+                        <div class="bg-gradient-to-r from-university-400 to-university-600 h-3 rounded-full relative" style="width: @Model.AvanceCuatrimestre%"></div>
+                    </div>
+                    <p class="text-xs text-gray-400 font-bold text-right uppercase tracking-wider">Avance del cuatrimestre: @Model.AvanceCuatrimestre%</p>
                 </div>
-                <h3 class="font-bold text-2xl text-gray-800 mb-2">Aulas Virtuales</h3>
-                <p class="text-gray-500 mb-6 font-medium">Accede a tus materias activas, material didáctico y gestión de cursos.</p>
+            </div>
 
-                <div class="w-full bg-gray-100 rounded-full h-3 mb-2 shadow-inner overflow-hidden">
-                    <div class="bg-gradient-to-r from-university-400 to-university-600 h-3 rounded-full relative" style="width: 65%">
-                        <div class="absolute top-0 right-0 bottom-0 left-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAiLz4KPHBhdGggZD0iTTAgMEw4IDhaTTggMEwwIDhaIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPgo8L3N2Zz4=')]"></div>
+            <div class="md:col-span-4 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 border-t-4 border-t-blue-500 flex flex-col justify-between">
+                <div>
+                    <div class="bg-blue-50 w-14 h-14 rounded-2xl flex items-center justify-center text-blue-600 mb-6 shadow-inner">
+                        <i class="fas fa-clipboard-check text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-gray-800 mb-2">Sistema de Evaluación</h3>
+                    <p class="text-gray-500 text-sm mb-6 font-medium">Consulta tu historial académico, exámenes y retroalimentación docente.</p>
+                </div>
+                <a asp-controller="Calificaciones" asp-action="Index" class="block w-full text-center bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold py-3.5 rounded-xl transition-colors border border-gray-200">
+                    Ver Kardex Oficial
+                </a>
+            </div>
+
+            <div class="md:col-span-6 bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-6 hover:shadow-md transition-all duration-300 group cursor-pointer">
+                <div class="bg-purple-100 p-4 rounded-2xl text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                    <i class="fas fa-comments text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-gray-800">Foros y Tutorías</h3>
+                    <p class="text-gray-500 text-sm mt-1 font-medium">Herramientas interactivas y contacto con tus profesores.</p>
+                </div>
+            </div>
+        }
+        else if (rol == "Maestro")
+        {
+            <div class="md:col-span-8 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-[100px] -z-0 transition-transform duration-500 group-hover:scale-110"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="bg-amber-100 w-14 h-14 rounded-2xl flex items-center justify-center text-amber-600 shadow-inner">
+                            <i class="fas fa-users-class text-2xl"></i>
+                        </div>
+                        <a asp-controller="Profesor" asp-action="MisCursos" class="text-amber-600 font-bold text-sm hover:underline flex items-center gap-1">
+                            Gestionar Grupos <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                    <h3 class="font-bold text-2xl text-gray-800 mb-2">Mis Grupos Asignados</h3>
+                    <p class="text-gray-500 mb-6 font-medium">Sube material didáctico, programa tareas y modera las aulas virtuales.</p>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
+                            <p class="text-2xl font-bold text-gray-800">@Model.TotalGruposAsignados</p>
+                            <p class="text-xs text-gray-500 uppercase tracking-wider font-bold">Grupos</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
+                            <p class="text-2xl font-bold text-gray-800">@Model.TotalAlumnosAsignados</p>
+                            <p class="text-xs text-gray-500 uppercase tracking-wider font-bold">Alumnos</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
+                            <p class="text-2xl font-bold text-amber-600">@Model.TareasPendientes</p>
+                            <p class="text-xs text-gray-500 uppercase tracking-wider font-bold">Pendientes</p>
+                        </div>
                     </div>
                 </div>
-                <p class="text-xs text-gray-400 font-bold text-right uppercase tracking-wider">Avance del cuatrimestre: 65%</p>
             </div>
-        </div>
 
-        <div class="md:col-span-4 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 border-t-4 border-t-blue-500 flex flex-col justify-between">
-            <div>
-                <div class="bg-blue-50 w-14 h-14 rounded-2xl flex items-center justify-center text-blue-600 mb-6 shadow-inner">
-                    <i class="fas fa-clipboard-check text-2xl"></i>
+            <div class="md:col-span-4 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 border-t-4 border-t-amber-500 flex flex-col justify-between">
+                <div>
+                    <div class="bg-amber-50 w-14 h-14 rounded-2xl flex items-center justify-center text-amber-600 mb-6 shadow-inner">
+                        <i class="fas fa-file-signature text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-gray-800 mb-2">Actas y Calificaciones</h3>
+                    <p class="text-gray-500 text-sm mb-6 font-medium">Registra asistencia, asienta calificaciones y genera reportes de periodo.</p>
                 </div>
-                <h3 class="font-bold text-xl text-gray-800 mb-2">Sistema de Evaluación</h3>
-                <p class="text-gray-500 text-sm mb-6 font-medium">Consulta tu historial académico, exámenes y retroalimentación docente.</p>
+                <a asp-controller="Profesor" asp-action="TareasPendientes" class="block w-full text-center bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold py-3.5 rounded-xl transition-colors border border-gray-200">
+                    Abrir Centro de Calificaciones
+                </a>
             </div>
-            <a href="#" class="block w-full text-center bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold py-3.5 rounded-xl transition-colors border border-gray-200">
-                Ver Kardex Oficial
-            </a>
-        </div>
 
-        <div class="md:col-span-6 bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-6 hover:shadow-md transition-all duration-300 group cursor-pointer">
-            <div class="bg-purple-100 p-4 rounded-2xl text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                <i class="fas fa-comments text-2xl"></i>
+            <div class="md:col-span-6 bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-6 hover:shadow-md transition-all duration-300 group cursor-pointer">
+                <div class="bg-emerald-100 p-4 rounded-2xl text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                    <i class="fas fa-calendar-alt text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-gray-800">Horarios y Planeación</h3>
+                    <p class="text-gray-500 text-sm mt-1 font-medium">Consulta tu tira de materias e ingresa tu planeación académica.</p>
+                </div>
             </div>
-            <div>
-                <h3 class="font-bold text-lg text-gray-800">Foros y Videoconferencias</h3>
-                <p class="text-gray-500 text-sm mt-1 font-medium">Herramientas interactivas y sesiones en vivo.</p>
+        }
+        else if (rol == "Administrador")
+        {
+            <div class="md:col-span-8 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-bl-[100px] -z-0 transition-transform duration-500 group-hover:scale-110"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="bg-red-100 w-14 h-14 rounded-2xl flex items-center justify-center text-red-600 shadow-inner">
+                            <i class="fas fa-cogs text-2xl"></i>
+                        </div>
+                        <a asp-controller="Admin" asp-action="Index" class="text-red-600 font-bold text-sm hover:underline flex items-center gap-1">
+                            Panel de Control <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                    <h3 class="font-bold text-2xl text-gray-800 mb-2">Administración del Sistema</h3>
+                    <p class="text-gray-500 mb-6 font-medium">Gestión de usuarios, asignación de roles y métricas de uso de la plataforma.</p>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-xl font-bold text-gray-800">@Model.TotalAlumnos.ToString("N0")</p>
+                                <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Alumnos</p>
+                            </div>
+                            <i class="fas fa-user-graduate text-gray-300 text-2xl"></i>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-xl font-bold text-gray-800">@Model.TotalDocentes</p>
+                                <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Docentes</p>
+                            </div>
+                            <i class="fas fa-chalkboard-teacher text-gray-300 text-2xl"></i>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-xl font-bold text-green-600">@Model.UptimeSistema%</p>
+                                <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Uptime</p>
+                            </div>
+                            <i class="fas fa-server text-gray-300 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <div class="md:col-span-4 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 border-t-4 border-t-red-500 flex flex-col justify-between">
+                <div>
+                    <div class="bg-red-50 w-14 h-14 rounded-2xl flex items-center justify-center text-red-600 mb-6 shadow-inner">
+                        <i class="fas fa-calendar-check text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-gray-800 mb-2">Control Escolar</h3>
+                    <p class="text-gray-500 text-sm mb-6 font-medium">Apertura de periodos, gestión de carreras y planes de estudio.</p>
+                </div>
+                <a asp-controller="Cursos" asp-action="Index" class="block w-full text-center bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold py-3.5 rounded-xl transition-colors border border-gray-200">
+                    Gestionar Periodo
+                </a>
+            </div>
+
+            <div class="md:col-span-6 bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-6 hover:shadow-md transition-all duration-300 group cursor-pointer">
+                <div class="bg-indigo-100 p-4 rounded-2xl text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                    <i class="fas fa-bullhorn text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-gray-800">Comunicación Global</h3>
+                    <p class="text-gray-500 text-sm mt-1 font-medium">Publicar avisos para toda la comunidad universitaria.</p>
+                </div>
+            </div>
+        }
 
         <div class="md:col-span-6 bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-3xl shadow-lg text-white relative overflow-hidden flex items-center">
             <i class="fas fa-university absolute -right-4 top-1/2 -translate-y-1/2 text-8xl text-white opacity-5"></i>
@@ -87,8 +206,8 @@
                     </span>
                     <span class="text-xs font-bold uppercase tracking-wider">Aviso de Servicios Escolares</span>
                 </div>
-                <h3 class="font-bold text-lg mb-1">Actualización de Plataforma</h3>
-                <p class="text-gray-300 text-sm">El sistema de e-learning ha sido optimizado para mejorar la escalabilidad y soporte.</p>
+                <h3 class="font-bold text-lg mb-1">@Model.AvisoTitulo</h3>
+                <p class="text-gray-300 text-sm">@Model.AvisoMensaje</p>
             </div>
         </div>
 

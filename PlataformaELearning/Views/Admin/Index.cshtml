@@ -2,6 +2,12 @@
 @{
     ViewData["Title"] = "Gestión de Usuarios";
     var filtroActual = ViewData["FiltroActual"]?.ToString() ?? "Todos";
+
+    // Cálculos de métricas rápidas basados en los datos recibidos
+    var totalUsuarios = Model.Count();
+    var totalAlumnos = Model.Count(u => u.Role == "Alumno");
+    var totalMaestros = Model.Count(u => u.Role == "Maestro");
+    var totalAdmins = Model.Count(u => u.Role == "Administrador");
 }
 
 <div class="p-4 md:p-8 animate__animated animate__fadeIn max-w-7xl mx-auto">
@@ -11,25 +17,67 @@
             <h1 class="text-2xl md:text-3xl font-bold text-gray-800"><i class="fas fa-users-cog text-university-600 mr-2"></i> Gestión de Usuarios</h1>
             <p class="text-gray-500 mt-1">Administra accesos, roles y expedientes de la comunidad universitaria.</p>
         </div>
-        <a asp-action="Create" class="bg-university-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-university-700 transition shadow-lg flex items-center gap-2 w-fit">
-            <i class="fas fa-plus"></i> Registrar Nuevo
-        </a>
-        <a asp-action="CreateMaestro" class="bg-university-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-university-700 transition shadow-lg flex items-center gap-2 w-fit">
-            <i class="fas fa-plus"></i> Registrar Maestro
-        </a>
+        <div class="flex gap-2">
+            <a asp-action="CreateMaestro" class="bg-white text-university-600 border border-university-200 px-5 py-2.5 rounded-xl font-bold hover:bg-university-50 transition shadow-sm flex items-center gap-2">
+                <i class="fas fa-chalkboard-teacher"></i> Nuevo Maestro
+            </a>
+            <a asp-action="Create" class="bg-university-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-university-700 transition shadow-md flex items-center gap-2">
+                <i class="fas fa-user-plus"></i> Registrar Usuario
+            </a>
+        </div>
     </div>
 
-    <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
-        <a asp-action="Index" asp-route-rol="" class="px-4 py-2 rounded-lg font-medium text-sm transition @(filtroActual == "Todos" ? "bg-university-100 text-university-700 border border-university-200" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">Todos</a>
-        <a asp-action="Index" asp-route-rol="Administrador" class="px-4 py-2 rounded-lg font-medium text-sm transition @(filtroActual == "Administrador" ? "bg-university-100 text-university-700 border border-university-200" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">Administradores</a>
-        <a asp-action="Index" asp-route-rol="Maestro" class="px-4 py-2 rounded-lg font-medium text-sm transition @(filtroActual == "Maestro" ? "bg-university-100 text-university-700 border border-university-200" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">Maestros</a>
-        <a asp-action="Index" asp-route-rol="Alumno" class="px-4 py-2 rounded-lg font-medium text-sm transition @(filtroActual == "Alumno" ? "bg-university-100 text-university-700 border border-university-200" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">Alumnos</a>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Total Usuarios</p>
+                <p class="text-2xl font-black text-gray-800">@totalUsuarios</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 text-xl"><i class="fas fa-users"></i></div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Alumnos</p>
+                <p class="text-2xl font-black text-green-600">@totalAlumnos</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-green-500 text-xl"><i class="fas fa-user-graduate"></i></div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Maestros</p>
+                <p class="text-2xl font-black text-blue-600">@totalMaestros</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 text-xl"><i class="fas fa-chalkboard-teacher"></i></div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Administradores</p>
+                <p class="text-2xl font-black text-purple-600">@totalAdmins</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-500 text-xl"><i class="fas fa-user-shield"></i></div>
+        </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div class="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto">
+            <a asp-action="Index" asp-route-rol="" class="px-4 py-2 rounded-lg font-medium text-sm transition @(filtroActual == "Todos" ? "bg-university-100 text-university-700 border border-university-200" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">Todos</a>
+            <a asp-action="Index" asp-route-rol="Administrador" class="px-4 py-2 rounded-lg font-medium text-sm transition @(filtroActual == "Administrador" ? "bg-university-100 text-university-700 border border-university-200" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">Administradores</a>
+            <a asp-action="Index" asp-route-rol="Maestro" class="px-4 py-2 rounded-lg font-medium text-sm transition @(filtroActual == "Maestro" ? "bg-university-100 text-university-700 border border-university-200" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">Maestros</a>
+            <a asp-action="Index" asp-route-rol="Alumno" class="px-4 py-2 rounded-lg font-medium text-sm transition @(filtroActual == "Alumno" ? "bg-university-100 text-university-700 border border-university-200" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50")">Alumnos</a>
+        </div>
+
+        <div class="w-full md:w-80 relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input type="text" id="buscadorDinamico" placeholder="Buscar por nombre, correo o matrícula..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-university-500 focus:border-university-500 outline-none transition shadow-sm text-sm">
+        </div>
     </div>
 
     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
+        <div class="max-h-[600px] overflow-y-auto overflow-x-auto relative">
+            <table class="w-full text-left border-collapse" id="tablaUsuarios">
+                <thead class="bg-white sticky top-0 z-10 shadow-sm">
                     <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
                         <th class="p-4 font-semibold">Usuario</th>
                         <th class="p-4 font-semibold">Matrícula</th>
@@ -40,19 +88,19 @@
                 <tbody class="divide-y divide-gray-100">
                     @foreach (var user in Model)
                     {
-                        <tr class="hover:bg-gray-50/50 transition">
+                        <tr class="hover:bg-gray-50/50 transition fila-usuario">
                             <td class="p-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-university-100 text-university-600 flex items-center justify-center font-bold flex-shrink-0">
                                         @(user.FirstName?.Substring(0, 1))@(user.LastName?.Substring(0, 1))
                                     </div>
                                     <div>
-                                        <p class="font-bold text-gray-900">@user.FirstName @user.LastName</p>
-                                        <p class="text-xs text-gray-500">@user.Email</p>
+                                        <p class="font-bold text-gray-900 nombre-usuario">@user.FirstName @user.LastName</p>
+                                        <p class="text-xs text-gray-500 correo-usuario">@user.Email</p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-4 font-mono text-sm text-gray-700">@user.Matricula</td>
+                            <td class="p-4 font-mono text-sm text-gray-700 matricula-usuario">@user.Matricula</td>
                             <td class="p-4">
                                 <span class="px-3 py-1 rounded-full text-xs font-bold @(user.Role == "Administrador" ? "bg-purple-100 text-purple-700" : user.Role == "Maestro" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700")">
                                     @user.Role
@@ -64,7 +112,7 @@
                                         <i class="fas fa-pen text-sm"></i>
                                     </a>
 
-                                    @if (user.Email != User.Identity.Name) // Evitar auto-eliminado visualmente
+                                    @if (user.Email != User.Identity.Name)
                                     {
                                         <form asp-action="Delete" asp-route-id="@user.Id" method="post" onsubmit="return confirm('¿Estás seguro de que deseas eliminar permanentemente a este usuario?');" class="inline">
                                             <button type="submit" class="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition" title="Eliminar">
@@ -76,10 +124,16 @@
                             </td>
                         </tr>
                     }
+                    <tr id="filaSinResultados" style="display: none;">
+                        <td colspan="4" class="p-12 text-center">
+                            <i class="fas fa-search text-gray-300 text-4xl mb-3"></i>
+                            <p class="text-gray-500 font-medium">No hay usuarios que coincidan con tu búsqueda.</p>
+                        </td>
+                    </tr>
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="4" class="p-8 text-center text-gray-500">No se encontraron usuarios con este filtro.</td>
+                            <td colspan="4" class="p-12 text-center text-gray-500">No se encontraron usuarios registrados en la plataforma.</td>
                         </tr>
                     }
                 </tbody>
@@ -91,6 +145,7 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+            // Manejo de notificaciones Toastr
             @if (TempData["SuccessMessage"] != null)
             {
                     <text>toastr.success('@TempData["SuccessMessage"]');</text>
@@ -99,6 +154,33 @@
             {
                     <text>toastr.error('@TempData["ErrorMessage"]');</text>
             }
+
+            // Lógica del buscador dinámico en tiempo real
+            $("#buscadorDinamico").on("keyup", function () {
+                var valorBusqueda = $(this).val().toLowerCase();
+                var resultadosEncontrados = 0;
+
+                $(".fila-usuario").each(function () {
+                    // Buscar en nombre, correo y matrícula
+                    var textoFila = $(this).find('.nombre-usuario').text() + " " +
+                                    $(this).find('.correo-usuario').text() + " " +
+                                    $(this).find('.matricula-usuario').text();
+
+                    if (textoFila.toLowerCase().indexOf(valorBusqueda) > -1) {
+                        $(this).show();
+                        resultadosEncontrados++;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+
+                // Mostrar mensaje si no hay resultados
+                if (resultadosEncontrados === 0 && valorBusqueda !== "") {
+                    $("#filaSinResultados").show();
+                } else {
+                    $("#filaSinResultados").hide();
+                }
+            });
         });
     </script>
 }

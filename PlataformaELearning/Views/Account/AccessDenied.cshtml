@@ -1,0 +1,50 @@
+﻿@{
+    ViewData["Title"] = "Acceso Denegado";
+}
+
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center">
+        <div class="inline-flex items-center justify-center w-24 h-24 bg-red-100 rounded-full mb-6">
+            <i class="fas fa-lock text-4xl text-red-600"></i>
+        </div>
+
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Acceso Denegado</h1>
+
+        <p class="text-gray-600 mb-8">
+            No tienes permisos para acceder a este contenido.
+            @if (User.IsInRole("Alumno"))
+            {
+                <span>Este material solo está disponible para profesores o administradores.</span>
+            }
+            else if (!User.Identity?.IsAuthenticated ?? true)
+            {
+                <span>Por favor, <a asp-controller="Account" asp-action="Login" class="text-university-600 hover:underline">inicia sesión</a> para continuar.</span>
+            }
+            else
+            {
+                <span>Si crees que esto es un error, contacta al administrador.</span>
+            }
+        </p>
+
+        <div class="flex gap-4 justify-center">
+            <a asp-controller="Home" asp-action="Index"
+               class="bg-university-600 hover:bg-university-700 text-white px-6 py-3 rounded-lg transition">
+                Volver al Inicio
+            </a>
+            @if (User.IsInRole("Alumno"))
+            {
+                <a asp-controller="Inscripciones" asp-action="MisCursos"
+                   class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg transition">
+                    Mis Cursos
+                </a>
+            }
+            @if (User.IsInRole("Maestro"))
+            {
+                <a asp-controller="Profesor" asp-action="MisCursos"
+                   class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg transition">
+                    Mis Cursos
+                </a>
+            }
+        </div>
+    </div>
+</div>

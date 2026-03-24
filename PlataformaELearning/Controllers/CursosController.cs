@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using PlataformaELearning.Data;
 using PlataformaELearning.Models;
+using System.Security.Claims;
 
 namespace PlataformaELearning.Controllers
 {
@@ -29,15 +30,44 @@ namespace PlataformaELearning.Controllers
             ViewData["MaestroId"] = new SelectList(maestros, "Id", "NombreCompleto", maestroSeleccionado);
         }
 
+        // ========== INDEX MODIFICADO: Filtrar cursos por rol ==========
         public async Task<IActionResult> Index()
         {
-            var cursos = await _context.Cursos
+            IQueryable<Curso> query = _context.Cursos
                 .Include(c => c.Maestro)
-                .Include(c => c.Contenidos)
-                .ToListAsync();
+                .Include(c => c.Contenidos);
+
+            // Si es profesor, filtrar solo sus cursos
+            if (User.IsInRole("Maestro"))
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null)
+                {
+                    int userId = int.Parse(userIdClaim);
+                    query = query.Where(c => c.MaestroId == userId);
+                }
+            }
+            // Si es alumno, filtrar cursos en los que está inscrito
+            else if (User.IsInRole("Alumno"))
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null)
+                {
+                    int userId = int.Parse(userIdClaim);
+                    var cursosInscritos = await _context.Inscripciones
+                        .Where(i => i.AlumnoId == userId)
+                        .Select(i => i.CursoId)
+                        .ToListAsync();
+
+                    query = query.Where(c => cursosInscritos.Contains(c.Id));
+                }
+            }
+
+            var cursos = await query.ToListAsync();
             return View(cursos);
         }
 
+        // ========== DETAILS MODIFICADO: Verificar permisos ==========
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -45,9 +75,43 @@ namespace PlataformaELearning.Controllers
             var curso = await _context.Cursos
                 .Include(c => c.Maestro)
                 .Include(c => c.Contenidos)
+                .Include(c => c.Apartados!)
+                    .ThenInclude(a => a.Tareas!)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (curso == null) return NotFound();
+
+            // VERIFICAR PERMISOS:
+            // - Admin puede ver todo
+            // - Profesor solo puede ver sus cursos
+            // - Alumno solo puede ver cursos inscritos
+            if (User.IsInRole("Maestro"))
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null)
+                {
+                    int userId = int.Parse(userIdClaim);
+                    if (curso.MaestroId != userId)
+                    {
+                        return Forbid(); // Devuelve 403 - Acceso denegado
+                    }
+                }
+            }
+            else if (User.IsInRole("Alumno"))
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null)
+                {
+                    int userId = int.Parse(userIdClaim);
+                    bool inscrito = await _context.Inscripciones
+                        .AnyAsync(i => i.CursoId == id && i.AlumnoId == userId);
+
+                    if (!inscrito)
+                    {
+                        return Forbid(); // Devuelve 403 - Acceso denegado
+                    }
+                }
+            }
 
             return View(curso);
         }
@@ -138,12 +202,31 @@ namespace PlataformaELearning.Controllers
 
         // ============ MÉTODOS PARA CONTENIDO DEL CURSO ============
 
+        // ========== AGREGAR CONTENIDO MODIFICADO: Verificar permisos ==========
         public async Task<IActionResult> AgregarContenido(int? cursoId)
         {
             if (cursoId == null) return NotFound();
 
             var curso = await _context.Cursos.FindAsync(cursoId);
             if (curso == null) return NotFound();
+
+            // Verificar que el profesor sea el dueño del curso
+            if (User.IsInRole("Maestro"))
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null)
+                {
+                    int userId = int.Parse(userIdClaim);
+                    if (curso.MaestroId != userId)
+                    {
+                        return Forbid();
+                    }
+                }
+            }
+            else if (!User.IsInRole("Administrador"))
+            {
+                return Forbid();
+            }
 
             ViewBag.CursoId = cursoId;
             ViewBag.CursoNombre = curso.Nombre;
@@ -161,6 +244,27 @@ namespace PlataformaELearning.Controllers
         [RequestSizeLimit(104857600)] // Permite subir PDFs de hasta 100MB
         public async Task<IActionResult> AgregarContenido([Bind("CursoId,Titulo,Tipo,ContenidoTexto,UrlVideo")] ContenidoCurso contenido, IFormFile? archivoPDF)
         {
+            // Verificar permisos nuevamente en POST
+            var curso = await _context.Cursos.FindAsync(contenido.CursoId);
+            if (curso == null) return NotFound();
+
+            if (User.IsInRole("Maestro"))
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null)
+                {
+                    int userId = int.Parse(userIdClaim);
+                    if (curso.MaestroId != userId)
+                    {
+                        return Forbid();
+                    }
+                }
+            }
+            else if (!User.IsInRole("Administrador"))
+            {
+                return Forbid();
+            }
+
             if (ModelState.IsValid)
             {
                 contenido.FechaPublicacion = DateTime.Now;
@@ -218,6 +322,7 @@ namespace PlataformaELearning.Controllers
             return File(contenido.ArchivoFisico, contenido.ContentType ?? "application/pdf", contenido.NombreArchivo);
         }
 
+        // ========== ELIMINAR CONTENIDO MODIFICADO: Verificar permisos ==========
         public async Task<IActionResult> EliminarContenido(int? id)
         {
             if (id == null) return NotFound();
@@ -228,6 +333,24 @@ namespace PlataformaELearning.Controllers
 
             if (contenido == null) return NotFound();
 
+            // Verificar permisos
+            if (User.IsInRole("Maestro"))
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null)
+                {
+                    int userId = int.Parse(userIdClaim);
+                    if (contenido.Curso?.MaestroId != userId)
+                    {
+                        return Forbid();
+                    }
+                }
+            }
+            else if (!User.IsInRole("Administrador"))
+            {
+                return Forbid();
+            }
+
             return View(contenido);
         }
 
@@ -235,14 +358,34 @@ namespace PlataformaELearning.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarContenidoConfirmed(int id)
         {
-            var contenido = await _context.ContenidosCursos.FindAsync(id);
-            if (contenido != null)
+            var contenido = await _context.ContenidosCursos
+                .Include(c => c.Curso)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (contenido == null) return NotFound();
+
+            // Verificar permisos nuevamente en POST
+            if (User.IsInRole("Maestro"))
             {
-                _context.ContenidosCursos.Remove(contenido);
-                await _context.SaveChangesAsync();
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null)
+                {
+                    int userId = int.Parse(userIdClaim);
+                    if (contenido.Curso?.MaestroId != userId)
+                    {
+                        return Forbid();
+                    }
+                }
+            }
+            else if (!User.IsInRole("Administrador"))
+            {
+                return Forbid();
             }
 
-            return RedirectToAction(nameof(Details), new { id = contenido?.CursoId });
+            _context.ContenidosCursos.Remove(contenido);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = contenido.CursoId });
         }
     }
 }

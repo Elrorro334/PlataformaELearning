@@ -1,0 +1,89 @@
+﻿@model PlataformaELearning.Models.EntregaTarea
+
+@{
+    ViewData["Title"] = "Calificar Entrega";
+    var calificacionExistente = ViewBag.Calificacion as PlataformaELearning.Models.Calificacion;
+}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a asp-action="VerEntregas" asp-route-tareaId="@Model.TareaId" class="text-university-600 hover:underline flex items-center gap-1 mb-4">
+            <i class="fas fa-arrow-left"></i> Volver a entregas
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Columna principal: Entrega del alumno -->
+        <div class="md:col-span-2 space-y-6">
+            <!-- Info del alumno -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Entrega de @Model.Alumno?.FirstName @Model.Alumno?.LastName</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <span class="text-sm text-gray-500 block mb-1">Fecha de entrega</span>
+                        <p class="font-medium">@Model.FechaEntrega.ToString("dd/MM/yyyy HH:mm")</p>
+                        @if (Model.EsEntregaTardia)
+                        {
+                            <span class="inline-block mt-1 text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">Entrega tardía</span>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.ComentarioAlumno))
+                    {
+                        <div>
+                            <span class="text-sm text-gray-500 block mb-1">Comentario del alumno</span>
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <p class="text-gray-700">@Model.ComentarioAlumno</p>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.ArchivoEntregado != null)
+                    {
+                        <div>
+                            <span class="text-sm text-gray-500 block mb-1">Archivo entregado</span>
+                            <a asp-action="DescargarEntrega" asp-route-id="@Model.Id" target="_blank"
+                               class="inline-flex items-center gap-2 bg-university-50 text-university-700 px-4 py-2 rounded-lg hover:bg-university-100">
+                                <i class="fas fa-file-pdf"></i>
+                                @(Model.NombreArchivo ?? "Ver archivo")
+                                <i class="fas fa-download ml-2"></i>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna lateral: Formulario de calificación -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                    @(calificacionExistente != null ? "Editar calificación" : "Calificar entrega")
+                </h2>
+
+                <form asp-action="CalificarEntrega" method="post">
+                    <input type="hidden" name="entregaId" value="@Model.Id" />
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Calificación (0-10)</label>
+                            <input type="number" name="puntuacion" step="0.1" min="0" max="10"
+                                   value="@(calificacionExistente?.Puntuacion ?? 0)"
+                                   class="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-university-500 focus:border-university-500" required />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Comentarios (opcional)</label>
+                            <textarea name="comentarios" rows="4" class="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-university-500 focus:border-university-500">@calificacionExistente?.Comentarios</textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-university-600 hover:bg-university-700 text-white font-medium py-2 px-4 rounded-lg transition">
+                            Guardar calificación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

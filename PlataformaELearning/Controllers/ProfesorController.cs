@@ -80,6 +80,46 @@ public class ProfesorController : Controller
         return View(resultado);
     }
 
+    // ========== PREVISUALIZAR ARCHIVO ==========
+    [HttpGet]
+    public async Task<IActionResult> PrevisualizarEntrega(int id)
+    {
+        var userId = ObtenerProfesorId();
+        if (userId == null) return Unauthorized();
+
+        var entrega = await _context.EntregasTareas
+            .Include(e => e.Tarea)
+                .ThenInclude(t => t.Apartado)
+                    .ThenInclude(a => a!.Curso)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (entrega == null || entrega.ArchivoEntregado == null)
+            return NotFound();
+
+        // Verificar permisos: Solo el maestro del curso o un admin pueden ver
+        if (entrega.Tarea?.Apartado?.Curso?.MaestroId != userId && !User.IsInRole("Administrador"))
+        {
+            return Forbid();
+        }
+
+        // Configurar Content-Type adecuadamente para previsualización
+        string contentType = entrega.ContentType ?? "application/octet-stream";
+        string fileExtension = Path.GetExtension(entrega.NombreArchivo)?.ToLower() ?? "";
+
+        // Forzar renderizado en el navegador para tipos soportados (pdf, imagenes, texto)
+        if (fileExtension == ".pdf") contentType = "application/pdf";
+        else if (fileExtension == ".jpg" || fileExtension == ".jpeg") contentType = "image/jpeg";
+        else if (fileExtension == ".png") contentType = "image/png";
+        else if (fileExtension == ".txt") contentType = "text/plain";
+
+        // Para archivos Word/Excel es más complejo previsualizarlos nativamente.
+        // Usaremos un visor de Office si es posible, pero por ahora devolvemos el archivo.
+        // En la vista manejaremos qué mostrar.
+
+        // No agregamos header de 'attachment' para que el navegador intente mostrarlo
+        return File(entrega.ArchivoEntregado, contentType);
+    }
+
     // ========== VER ENTREGAS DE UNA TAREA ESPECÍFICA ==========
     public async Task<IActionResult> VerEntregas(int tareaId)
     {

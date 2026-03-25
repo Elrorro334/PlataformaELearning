@@ -5,69 +5,210 @@
     var tarea = ViewBag.Tarea as PlataformaELearning.Models.TareaApartado;
 }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-6">
-        <a asp-action="TareasPendientes" class="text-university-600 hover:underline flex items-center gap-1 mb-4">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate__animated animate__fadeIn">
+    <div class="mb-8">
+        <a asp-action="TareasPendientes" class="text-university-600 hover:text-university-700 font-bold flex items-center gap-2 mb-6 transition w-fit">
             <i class="fas fa-arrow-left"></i> Volver a pendientes
         </a>
-        <h1 class="text-3xl font-bold text-gray-900">@tarea?.Titulo</h1>
-        <p class="text-gray-600">@tarea?.Apartado?.Curso?.Nombre - @tarea?.Apartado?.Titulo</p>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">@tarea?.Titulo</h1>
+        <p class="text-gray-500 font-medium mt-1">@tarea?.Apartado?.Curso?.Nombre - @tarea?.Apartado?.Titulo</p>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
         @if (Model.Any())
         {
-            <div class="space-y-4">
+            <div class="grid gap-6 md:grid-cols-2">
                 @foreach (var entrega in Model)
                 {
-                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-                        <div class="flex items-start justify-between">
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 bg-university-100 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-user text-university-600"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-medium text-gray-900">@entrega.Alumno?.FirstName @entrega.Alumno?.LastName</h3>
-                                    <p class="text-sm text-gray-500">Entregado: @entrega.FechaEntrega.ToString("dd/MM/yyyy HH:mm")</p>
-                                    @if (!string.IsNullOrEmpty(entrega.ComentarioAlumno))
-                                    {
-                                        <p class="mt-2 text-gray-700 bg-gray-50 p-2 rounded">💬 @entrega.ComentarioAlumno</p>
-                                    }
+                    <div class="bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-lg transition-shadow relative overflow-hidden group">
+
+                        <div class="absolute left-0 top-0 bottom-0 w-2 @(entrega.Calificacion != null ? "bg-green-500" : "bg-amber-500")"></div>
+
+                        <div class="flex flex-col h-full pl-4">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-university-50 text-university-600 font-bold rounded-full flex items-center justify-center text-lg border border-university-100">
+                                        @(entrega.Alumno?.FirstName?.Substring(0, 1))@(entrega.Alumno?.LastName?.Substring(0, 1))
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-gray-900 text-lg">@entrega.Alumno?.FirstName @entrega.Alumno?.LastName</h3>
+                                        <p class="text-xs text-gray-400 font-medium flex items-center gap-1">
+                                            <i class="far fa-clock"></i> Entregado: @entrega.FechaEntrega.ToString("dd/MM/yyyy HH:mm")
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                @if (entrega.ArchivoEntregado != null)
+
+                            @if (!string.IsNullOrEmpty(entrega.ComentarioAlumno))
+                            {
+                                <div class="mb-4 bg-gray-50 rounded-xl p-3 text-sm text-gray-600 border border-gray-100 relative">
+                                    <i class="fas fa-quote-left absolute text-gray-200 text-xl top-2 right-3"></i>
+                                    <p class="relative z-10 italic">"@entrega.ComentarioAlumno"</p>
+                                </div>
+                            }
+
+                            @if (entrega.ArchivoEntregado != null && !string.IsNullOrEmpty(entrega.NombreArchivo))
+                            {
+                                string ext = System.IO.Path.GetExtension(entrega.NombreArchivo).ToLower();
+                                bool isPreviewable = ext == ".pdf" || ext == ".jpg" || ext == ".jpeg" || ext == ".png";
+
+                                <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100 mb-4">
+                                    @if (ext == ".pdf")
+                                    {
+                                        <i class="fas fa-file-pdf text-red-500 text-2xl"></i>
+                                    }
+                                    else if (ext == ".jpg" || ext == ".png" || ext == ".jpeg")
+                                    {
+
+                                        <i class="fas fa-file-image text-blue-500 text-2xl"></i>
+                                    }
+                                    else if (ext == ".doc" || ext == ".docx")
+                                    {
+
+                                        <i class="fas fa-file-word text-blue-700 text-2xl"></i>
+                                    }
+                                    else
+                                    {
+
+                                        <i class="fas fa-file-alt text-gray-500 text-2xl"></i>
+                                    }
+
+                                    <span class="text-sm font-bold text-gray-700 truncate flex-grow">@entrega.NombreArchivo</span>
+
+                                    <div class="flex gap-1 shrink-0">
+                                        @if (isPreviewable)
+                                        {
+                                            <button type="button"
+                                                    onclick="abrirModalPreview('@Url.Action("PrevisualizarEntrega", "Profesor", new { id = entrega.Id })', '@entrega.NombreArchivo')"
+                                                    class="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-lg text-university-600 hover:bg-university-50 hover:text-university-700 transition" title="Previsualizar archivo">
+                                                <i class="fas fa-eye text-sm"></i>
+                                            </button>
+                                        }
+                                        <a asp-action="DescargarEntrega" asp-route-id="@entrega.Id" target="_blank"
+                                           class="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-100 transition" title="Descargar archivo">
+                                            <i class="fas fa-download text-sm"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mb-4 text-xs font-bold text-red-500 uppercase tracking-wider bg-red-50 px-3 py-2 rounded-lg border border-red-100 text-center">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i> Sin archivo adjunto
+                                </div>
+                            }
+
+                            <div class="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
+                                @if (entrega.Calificacion != null)
                                 {
-                                    <a asp-action="DescargarEntrega" asp-route-id="@entrega.Id"
-                                       class="text-university-600 hover:text-university-700 p-2 hover:bg-university-50 rounded-lg"
-                                       target="_blank">
-                                        <i class="fas fa-download"></i>
+                                    <div class="flex flex-col">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Nota Final</span>
+                                        <span class="text-2xl font-black text-green-600">@entrega.Calificacion.Puntuacion<span class="text-sm text-gray-400 font-bold">/10</span></span>
+                                    </div>
+                                    <a asp-action="CalificarEntrega" asp-route-entregaId="@entrega.Id" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-5 py-2.5 rounded-xl text-sm transition flex items-center gap-2">
+                                        <i class="fas fa-pen"></i> Editar
                                     </a>
                                 }
-                                <a asp-action="CalificarEntrega" asp-route-entregaId="@entrega.Id"
-                                   class="bg-university-600 hover:bg-university-700 text-white px-4 py-2 rounded-lg">
-                                    @(entrega.Calificacion != null ? "Editar calificación" : "Calificar")
-                                </a>
-                            </div>
-                        </div>
-
-                        @if (entrega.Calificacion != null)
-                        {
-                            <div class="mt-3 pt-3 border-t border-gray-100">
-                                <span class="text-sm font-medium text-gray-700">Calificación: @entrega.Calificacion.Puntuacion/10</span>
-                                @if (!string.IsNullOrEmpty(entrega.Calificacion.Comentarios))
+                                else
                                 {
-                                    <p class="text-sm text-gray-600 mt-1">📝 @entrega.Calificacion.Comentarios</p>
+                                    <div class="flex flex-col">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-500">Estado</span>
+                                        <span class="font-bold text-gray-700">Por revisar</span>
+                                    </div>
+                                    <a asp-action="CalificarEntrega" asp-route-entregaId="@entrega.Id" class="bg-university-600 hover:bg-university-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition shadow-lg shadow-university-200 flex items-center gap-2">
+                                        <i class="fas fa-star"></i> Calificar
+                                    </a>
                                 }
                             </div>
-                        }
+                        </div>
                     </div>
                 }
             </div>
         }
         else
         {
-            <p class="text-center text-gray-500 py-8">No hay entregas para esta tarea</p>
+            <div class="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                <i class="fas fa-inbox text-5xl text-gray-300 mb-4"></i>
+                <p class="text-xl font-bold text-gray-700">No hay entregas aún</p>
+                <p class="text-gray-500 mt-2">Los alumnos aún no han subido archivos para esta tarea.</p>
+            </div>
         }
     </div>
 </div>
+
+<div id="previewModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" id="previewModalBackdrop"></div>
+
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-5xl h-[85vh] flex flex-col animate__animated animate__zoomIn">
+
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center shrink-0">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="w-10 h-10 bg-university-100 rounded-lg flex items-center justify-center text-university-600 shrink-0">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 truncate" id="previewModalTitle">Visualizador de Documentos</h3>
+                    </div>
+                    <button type="button" id="btnClosePreviewModal" class="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 focus:outline-none transition">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="bg-gray-100 flex-grow relative w-full h-full p-2 md:p-6">
+                    <div class="w-full h-full bg-white rounded-xl shadow-inner border border-gray-200 overflow-hidden relative flex items-center justify-center">
+
+                        <div id="previewLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10">
+                            <i class="fas fa-circle-notch fa-spin text-4xl text-university-600 mb-4"></i>
+                            <p class="text-gray-500 font-bold animate-pulse">Cargando documento...</p>
+                        </div>
+
+                        <iframe id="previewIframe" src="" class="w-full h-full border-0 absolute inset-0 z-20 hidden" onload="document.getElementById('previewLoader').classList.add('hidden'); this.classList.remove('hidden');"></iframe>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function abrirModalPreview(url, filename) {
+            // Mostrar modal
+            $('#previewModal').removeClass('hidden');
+            $('body').css('overflow', 'hidden'); // Prevenir scroll de fondo
+
+            // Setear título y URL
+            $('#previewModalTitle').text(filename);
+
+            // Mostrar loader y ocultar iframe viejo
+            $('#previewLoader').removeClass('hidden');
+            $('#previewIframe').addClass('hidden');
+
+            // Asignar nueva URL al iframe (el onload del iframe quitará el loader)
+            $('#previewIframe').attr('src', url + "#toolbar=0"); // toolbar=0 intenta ocultar la barra de PDF en navegadores
+        }
+
+        function cerrarModalPreview() {
+            $('#previewModal').addClass('hidden');
+            $('body').css('overflow', 'auto');
+            $('#previewIframe').attr('src', ''); // Limpiar iframe al cerrar
+        }
+
+        $(document).ready(function () {
+            // Cerrar con botón X
+            $('#btnClosePreviewModal').click(cerrarModalPreview);
+
+            // Cerrar haciendo click en el fondo oscuro
+            $('#previewModalBackdrop').click(cerrarModalPreview);
+
+            // Cerrar con tecla Escape
+            $(document).keyup(function(e) {
+                if (e.key === "Escape" && !$('#previewModal').hasClass('hidden')) {
+                    cerrarModalPreview();
+                }
+            });
+        });
+    </script>
+}
